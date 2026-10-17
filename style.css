@@ -173,3 +173,23 @@ details[open] strong{display:block;margin:10px 0 4px}
 .account-panel form {max-width:520px}.account-panel summary{cursor:pointer;font-weight:600;min-height:44px;padding:8px 0}.actions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
 #account_product_list{display:flex;flex-wrap:wrap;gap:8px}button{min-height:44px}input,textarea,select{max-width:100%}pre,p,label{overflow-wrap:anywhere}pre{white-space:pre-wrap}#pricingResult{border-left:3px solid var(--primary);padding:12px 16px;margin:16px 0}#pricingContext{font-size:.9rem}#workflowStatus{padding:12px 0}#priceApprovalStatus{font-weight:600}#approvePrice{margin-top:16px}section,form,.row>*{min-width:0}
 @media(max-width:600px){.account-panel{margin:12px;padding:16px}.row{grid-template-columns:1fr}.actions>*{flex:1 1 130px}}
+
+/* Suggestion and evidence panels keep native controls aligned and readable. */
+#suggestions{display:grid;gap:10px;margin:14px 0}
+.suggestion-photo{width:88px;height:112px;object-fit:cover;border-radius:12px;border:1px solid var(--border)}
+.suggestion{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:16px;line-height:1.5;color:var(--text);font-weight:500}
+.suggestion-description,.suggestion-title{align-items:start}
+.suggestion input[type=checkbox]{appearance:auto;width:20px;height:20px;min-height:20px;padding:0;margin:0;accent-color:var(--primary);align-self:center}
+.suggestion-description input[type=checkbox],.suggestion-title input[type=checkbox]{align-self:start;margin-top:4px}
+.evidence-disclosure{margin:14px 0;border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden}
+.evidence-disclosure>summary{list-style:none;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;min-height:50px;font-weight:600;cursor:pointer}
+.evidence-disclosure>summary::-webkit-details-marker{display:none}
+.evidence-disclosure>summary::after{content:'⌄';font-size:20px;color:var(--primary);transition:transform .18s ease}
+.evidence-disclosure[open]>summary::after{transform:rotate(180deg)}
+.evidence-disclosure>#analysisDetails,.evidence-disclosure>#intelligenceDetails{padding:0 16px 14px}
+#marketingResult{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;background:var(--surface-muted);border-radius:10px;margin:14px 0}
+#generateMarketing{width:100%;margin:14px 0}
+.price-input{display:flex;align-items:center;gap:8px}
+.price-input>span{position:static;flex:0 0 auto;padding:0 0 0 2px;font-weight:600}
+.price-input input{min-width:0;flex:1;padding-left:12px}
+#confirmed.check{align-items:center}

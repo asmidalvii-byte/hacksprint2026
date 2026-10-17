@@ -143,11 +143,11 @@ async function analyzePhoto(){
 }
 function textElement(tag,text,className){const element=document.createElement(tag);element.textContent=text;if(className)element.className=className;return element}
 function renderAnalysis(){
-  const suggestions=$('suggestions');suggestions.replaceChildren();
+  const suggestions=$('suggestions');suggestions.replaceChildren();if(photoURL){const photo=document.createElement('img');photo.className='suggestion-photo';photo.src=photoURL;photo.alt='Current product photo for comparison';suggestions.append(photo)}
   for(const field of ['title','description','category']){
-    const claim=analysis[field];const label=document.createElement('label');label.className='suggestion';
+    const claim=analysis[field];const label=document.createElement('label');label.className='suggestion suggestion-'+field;
     const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.dataset.field=field;checkbox.disabled=!claim.value;checkbox.checked=Boolean(claim.value);
-    label.append(checkbox,textElement('span',field+': '+(claim.value?claim.value+' ['+claim.evidenceIds.join(', ')+']':'Not identifiable — seller input needed')));suggestions.append(label);
+    label.append(checkbox,textElement('span',({title:'Title',description:'Description',category:'Category'})[field]+': '+(claim.value?(field==='category'?claim.value[0].toUpperCase()+claim.value.slice(1):claim.value)+' ['+claim.evidenceIds.join(', ')+']':'Not identifiable — seller input needed')));suggestions.append(label);
   }
   const details=$('analysisDetails');details.replaceChildren();
   const groups=[['Visible attributes',analysis.visibleAttributes.map(a=>a.name+': '+a.value+' ['+a.evidenceIds.join(', ')+']')],

@@ -1,0 +1,8 @@
+/* Small Kriti-specific language extension. Existing translations and language IDs stay authoritative. */
+(function(scope){
+ const api=scope.DukaanI18n;if(!api)return;
+ const labels={en:{productApproval:'I approve these product details.',priceApproval:'Approve Selling Price',sellerStorage:'Seller storage'},hi:{productApproval:'मैं इन उत्पाद विवरणों को मंज़ूरी देता/देती हूँ।',priceApproval:'बिक्री मूल्य मंज़ूर करें',sellerStorage:'विक्रेता संग्रहण'},ta:{productApproval:'இந்த தயாரிப்பு விவரங்களை நான் அங்கீகரிக்கிறேன்.',priceApproval:'விற்பனை விலையை அங்கீகரிக்கவும்',sellerStorage:'விற்பனையாளர் சேமிப்பு'},te:{productApproval:'ఈ ఉత్పత్తి వివరాలను నేను ఆమోదిస్తున్నాను.',priceApproval:'అమ్మకపు ధరను ఆమోదించండి',sellerStorage:'విక్రేత నిల్వ'},kn:{productApproval:'ಈ ಉತ್ಪನ್ನ ವಿವರಗಳನ್ನು ನಾನು ಅನುಮೋದಿಸುತ್ತೇನೆ.',priceApproval:'ಮಾರಾಟ ಬೆಲೆಯನ್ನು ಅನುಮೋದಿಸಿ',sellerStorage:'ಮಾರಾಟಗಾರರ ಸಂಗ್ರಹಣೆ'},bn:{productApproval:'আমি এই পণ্যের বিবরণ অনুমোদন করছি।',priceApproval:'বিক্রয় মূল্য অনুমোদন করুন',sellerStorage:'বিক্রেতার সংরক্ষণ'},mr:{productApproval:'मी या उत्पादनाच्या तपशीलांना मंजुरी देतो/देते.',priceApproval:'विक्री किंमत मंजूर करा',sellerStorage:'विक्रेता साठवण'},ml:{productApproval:'ഈ ഉൽപ്പന്ന വിശദാംശങ്ങൾ ഞാൻ അംഗീകരിക്കുന്നു.',priceApproval:'വിൽപ്പന വില അംഗീകരിക്കുക',sellerStorage:'വിൽപ്പനക്കാരുടെ സംഭരണം'}};
+ const oldGet=api.get.bind(api);api.get=(lang,key)=>labels[lang]?.[key]||labels.en[key]||oldGet(lang,key);
+ const oldApply=api.apply.bind(api);api.apply=(root,lang)=>{oldApply(root,lang);for(const el of root.querySelectorAll('[data-i18n=kritiProductApproval]'))el.textContent=api.get(lang,'productApproval')};
+ scope.KritiI18n={get:api.get};
+})(globalThis);

@@ -7,6 +7,7 @@
 <meta name="description" content="Turn product photos into editable catalog drafts and regional-language ads. You control the price.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23175A3C'/%3E%3Cpath d='M11 10h7q13 0 13 10T18 30h-7z' fill='white'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="kriti-ui.css">
 </head>
 <body>
 <section class="account-panel" aria-label="Seller account">
@@ -138,7 +139,7 @@
         <p class="muted" data-i18n="suggestionsHelp">Select the fields you want to apply.</p>
         <div id="suggestions"></div>
         <button id="applyAnalysis" class="secondary" type="button" data-i18n="applySuggestions">Apply selected suggestions</button>
-        <details>
+        <details class="evidence-disclosure">
           <summary data-i18n="evidenceDetails">Evidence, uncertainty and missing details</summary>
           <div id="analysisDetails"></div>
           <div id="intelligenceDetails"></div>
@@ -228,10 +229,10 @@
             <label for="discountPercent" data-i18n="discountLabel">Proposed discount %</label>
             <input id="discountPercent" type="number" min="0.01" max="99.99" step="0.01">
             <button id="generateMarketing" class="secondary" type="button" data-i18n="genMarketingBtn">Generate reviewed-price marketing</button>
-            <pre id="marketingResult" data-i18n="marketingPlaceholder">Approve a price to generate captions and WhatsApp copy.</pre>
+            <div id="marketingResult" data-i18n="marketingPlaceholder">Approve a price to generate captions and WhatsApp copy.</div>
           </section>
         </details>
-        <label class="check"><input type="checkbox" id="confirmed"> <span>I approve these product details.</span></label>
+        <label class="check"><input type="checkbox" id="confirmed"> <span data-i18n="kritiProductApproval">I approve these product details.</span></label>
       </form>
     </div>
     <p id="workflowStatus" role="status">Review product details to continue.</p>
@@ -369,6 +370,7 @@
 <script src="vendor/supabase.js"></script>
 <script src="account-ui.js"></script>
 <script src="i18n.js"></script>
+<script src="kriti-i18n.js"></script>
 <script src="shared/pricing.js"></script>
 <script src="app.js"></script>
 <script src="pricing-ui.js"></script>

@@ -1,0 +1,14 @@
+/* Kriti design-system overrides. Loaded after style.css. */
+:root{
+ --kriti-ivory:#FAF7F0;--kriti-paper:#FFFDF9;--kriti-charcoal:#292724;
+ --kriti-muted:#615A52;--kriti-terracotta:#9A3F28;--kriti-terracotta-dark:#78301D;
+ --kriti-line:#E8DED2;--kriti-radius:14px;--kriti-space:8px;
+ --bg:var(--kriti-ivory);--surface:var(--kriti-paper);--text:var(--kriti-charcoal);
+ --text-muted:var(--kriti-muted);--primary:var(--kriti-terracotta);
+ --primary-hover:var(--kriti-terracotta-dark);--border:var(--kriti-line);--focus:var(--kriti-terracotta);
+}
+body{color:var(--kriti-charcoal);background:var(--kriti-ivory)}
+:where(button,input,select,textarea,summary,a):focus-visible{outline:3px solid var(--kriti-terracotta);outline-offset:2px}
+:where(button){border-radius:var(--kriti-radius)}
+.panel,.account-panel,.destination-card,.evidence-disclosure{border-color:var(--kriti-line);box-shadow:0 3px 14px rgb(50 35 22 / 6%)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
