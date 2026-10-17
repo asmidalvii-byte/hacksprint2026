@@ -3,7 +3,7 @@ const socialFields=['instagram_caption','hashtags','marketplace_description','wh
 function invalidateSocial(){socialSequence++;socialController?.abort();socialController=null;socialDraft=null;socialDirty=false;socialContextStale=false;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;$('socialPanel').hidden=true;$('generateSocial').disabled=false;}
 function approvedSocialPrice(){return $('socialIncludePrice').checked&&$('priceApproved').checked&&priceValid()?`${$('p_currency').value} ${Number($('price').value).toFixed(2)}`:''}
 function socialExport(){if(!socialDraft)return null;const value={...socialDraft,...Object.fromEntries(socialFields.map(k=>[k,['hashtags','alternative_captions'].includes(k)?$('social_'+k).value.split('\n').filter(Boolean):$('social_'+k).value])),review_status:$('socialApproved').checked?'approved':'pending'};const price=approvedSocialPrice();if(price)for(const k of ['instagram_caption','whatsapp_message','voice_ad'])value[k]+='\n'+price;return value;}
-function markSocialContextChanged(){socialSequence++;socialController?.abort();$('generateSocial').disabled=false;if(!socialDraft)return;socialContextStale=true;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;$('confirmed').checked=false;$('socialIncludePrice').checked=false;$('socialSource').textContent='Listing changed. Your draft edits are preserved; review them against the updated product before sharing.';updateInstagramPreview();}
+function markSocialContextChanged(){socialSequence++;socialController?.abort();$('generateSocial').disabled=false;if(!socialDraft)return;socialContextStale=true;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;$('socialIncludePrice').checked=false;$('socialSource').textContent='Listing changed. Your draft edits are preserved; review them against the updated product before sharing.';updateInstagramPreview();}
 
 function renderIntelligence(){
  const data=analysis?.intelligence,box=$('intelligenceDetails');box.replaceChildren();if(!data)return;
@@ -16,6 +16,7 @@ function renderIntelligence(){
  }
 }
 $('generateSocial').onclick=async()=>{
+ if($('generateSocial').disabled)return;
  if(!$('confirmed').checked){toast('Review and approve the listing before generating marketing.');return}
  if(socialDraft&&(socialDirty||socialContextStale)&&!window.confirm('Replace your existing edited marketing draft? Cancel keeps your edits.'))return;
  const previousDraft=socialDraft;const previousValues=Object.fromEntries(socialFields.map(k=>[k,$('social_'+k).value]));
@@ -31,21 +32,21 @@ $('generateSocial').onclick=async()=>{
 
  for(const k of socialFields)$('social_'+k).value=Array.isArray(socialDraft[k])?socialDraft[k].join('\n'):socialDraft[k]||'';
  $('socialSource').textContent='Source: '+socialDraft.source+' · translation and claims require your review. Instagram publishing is not connected.';
- $('socialPanel').hidden=false;$('generateSocial').disabled=false;$('socialGenerationStatus').textContent=socialDraft.source==='gemini'?'Draft generated. Review the translation and claims.':'AI unavailable. A local template is ready for editing.';$('confirmed').checked=false;updateInstagramPreview();if(typeof saveDraft==='function')void saveDraft();
+ $('socialPanel').hidden=false;$('generateSocial').disabled=false;$('socialGenerationStatus').textContent=socialDraft.source==='gemini'?'Draft generated. Review the translation and claims.':'AI unavailable. A local template is ready for editing.';updateInstagramPreview();if(typeof saveDraft==='function')void saveDraft();
 };
 function instagramDraftText(){return [(socialExport()?.instagram_caption||'').trim(),$('social_hashtags').value.trim().split(/\s+/).filter(Boolean).join(' ')].filter(Boolean).join('\n');}
 function updateInstagramPreview(){const text=instagramDraftText();$('instagramPreviewCaption').textContent=text;const tags=$('social_hashtags').value.trim().split(/\s+/).filter(Boolean);const count=typeof Intl.Segmenter==='function'?[...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(text)].length:[...text].length;$('instagramCount').textContent=`${count} characters including hashtags and any approved price · ${tags.length} tags. ${tags.some(t=>!t.startsWith('#'))?'Start each hashtag with #. ':''}Guidance only; media and current Instagram API requirements still need validation.`;if(photoURL){$('instagramPreviewPhoto').src=photoURL;$('instagramPreviewPhoto').hidden=false}else $('instagramPreviewPhoto').hidden=true;}
 
-for(const k of socialFields)$('social_'+k).addEventListener('input',()=>{socialDirty=true;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;$('confirmed').checked=false;updateInstagramPreview()});
+for(const k of socialFields)$('social_'+k).addEventListener('input',()=>{socialDirty=true;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;updateInstagramPreview()});
 for(const k of ['title','description','material','condition','price','category','notes','language','p_currency','priceApproved'])$(k).addEventListener('input',markSocialContextChanged);
-$('socialApproved').onchange=()=>{$('instagramFinalApproval').checked=false;$('confirmed').checked=false};
+$('socialApproved').onchange=()=>{$('instagramFinalApproval').checked=false};
 function shareReady(){if(!socialDraft||!$('socialApproved').checked||!$('confirmed').checked){toast('Approve the edited marketing and final listing before sharing.');return false}return true}
 $('copyInstagram').onclick=async()=>{if(!shareReady())return;try{await navigator.clipboard.writeText(instagramDraftText());toast('Instagram caption copied.')}catch{toast('Clipboard unavailable. Select and copy the caption.')}};
 $('shareWhatsApp').onclick=()=>{if(shareReady())window.open('https://wa.me/?text='+encodeURIComponent(instagramDraftText()),'_blank','noopener,noreferrer')};
 $('downloadMarketing').onclick=()=>{if(!shareReady())return;try{const url=URL.createObjectURL(new Blob([JSON.stringify(socialExport(),null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='dukaan-marketing-draft.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Draft export requested. Check your browser downloads.');}catch{toast('Draft export could not start. Your edits are unchanged.');}};
-$('useSocialVoice').onclick=()=>{if(!shareReady())return;$('ad').value=socialExport().voice_ad;$('confirmed').checked=false;toast('Voice script applied. Review the listing again before playback.');};
+$('useSocialVoice').onclick=()=>{if(!shareReady())return;$('ad').value=socialExport().voice_ad;toast('Voice script applied. Review the script before playback.');};
 
-$('socialIncludePrice').onchange=()=>{if($('socialIncludePrice').checked&&(!$('priceApproved').checked||!priceValid())){$('socialIncludePrice').checked=false;toast('Approve a valid seller price first.');}socialDirty=true;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;$('confirmed').checked=false;updateInstagramPreview();};
+$('socialIncludePrice').onchange=()=>{if($('socialIncludePrice').checked&&(!$('priceApproved').checked||!priceValid())){$('socialIncludePrice').checked=false;toast('Approve a valid seller price first.');}socialDirty=true;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;updateInstagramPreview();};
 $('downloadCreative').onclick=()=>{if(!shareReady())return;if(!currentFile){toast('No product image is available. Upload a photo first.');return}try{const url=URL.createObjectURL(currentFile);const a=document.createElement('a');a.href=url;a.download=currentFile.name||'product-photo.jpg';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Image download requested. Check your browser downloads.');}catch{toast('Image download could not start. Your draft is unchanged.');}};
 $('postInstagram').onclick=async()=>{if(!shareReady())return;if(!currentFile||!$('instagramFinalApproval').checked){toast('Review the actual photo and approve the final Instagram post first.');return}if(!instagramDraftText().trim()){toast('Add a caption before publishing.');return}$('postInstagram').disabled=true;$('instagramStatus').textContent='Checking publishing availability…';try{const r=await fetch('/api/instagram/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({approved:true})});const result=await r.json();$('instagramStatus').textContent=result.error?.message||'Publishing was not confirmed. Your draft remains available.';}catch{$('instagramStatus').textContent='Publishing unavailable. Use copy, image download, draft export or WhatsApp.'}finally{$('postInstagram').disabled=false}};
 

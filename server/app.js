@@ -87,7 +87,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
   });
   app.post('/api/marketing', limiter, express.json({limit:'16kb'}), async (req,res,next) => {
     const input=req.body;
-    if(!input || Array.isArray(input) || Object.keys(input).some(k=>!['title','description','language','reviewed'].includes(k)) || input.reviewed!==true || typeof input.title!=='string' || !input.title.trim() || input.title.length>150 || typeof input.description!=='string' || input.description.length>2000 || !['hi','ta','te','kn','bn'].includes(input.language)) return res.status(400).json({error:{message:'Review the listing and choose a supported language first.'}});
+    if(!input || Array.isArray(input) || Object.keys(input).some(k=>!['title','description','language','reviewed'].includes(k)) || input.reviewed!==true || typeof input.title!=='string' || !input.title.trim() || input.title.length>150 || typeof input.description!=='string' || input.description.length>2000 || !['en','hi','ta','te','kn','bn'].includes(input.language)) return res.status(400).json({error:{message:'Review the listing and choose a supported language first.'}});
     if(!config.configured) return res.status(503).json({error:{message:'Gemini marketing is not configured. Local templates remain available.'}});
     if(active>=2) return res.status(503).json({error:{message:'Service busy. Try again.'}});
     active++;

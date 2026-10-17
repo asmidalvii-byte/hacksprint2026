@@ -26,3 +26,20 @@ test('creative download uses the uploaded bytes and reports request only',async(
 test('Instagram preview and count include current caption, tags and only approved optional price',async()=>{const {$,context,run}=setup();context.fetch=async()=>({ok:false});$('confirmed').checked=true;await $('generateSocial').onclick();$('social_instagram_caption').value='Handcrafted-looking 🌸';$('social_hashtags').value='#Local\n#Artisan';$('social_instagram_caption').dispatch('input');assert.equal($('instagramPreviewCaption').textContent,'Handcrafted-looking 🌸\n#Local #Artisan');assert.match($('instagramCount').textContent,/2 tags/);assert.match($('instagramCount').textContent,/Guidance only/);$('instagramFinalApproval').checked=true;$('social_hashtags').dispatch('input');assert.equal($('instagramFinalApproval').checked,false);$('social_hashtags').value='missingHash';$('social_hashtags').dispatch('input');assert.match($('instagramCount').textContent,/Start each hashtag/)});
 test('publishing requires exact image approval and never claims setup fallback is a publication',async()=>{const {$,context,run}=setup();context.fetch=async()=>({ok:false});$('confirmed').checked=true;await $('generateSocial').onclick();$('socialApproved').checked=true;$('confirmed').checked=true;let calls=0;context.fetch=async()=>{calls++;return {json:async()=>({error:{message:'Instagram publishing setup required.'}})}};await $('postInstagram').onclick();assert.equal(calls,0);run("currentFile=new Blob(['photo'],{type:'image/jpeg'})");$('instagramFinalApproval').checked=true;await $('postInstagram').onclick();assert.equal(calls,1);assert.match($('instagramStatus').textContent,/setup required/);assert.equal($('postInstagram').disabled,false)});
 test('connection status displays missing configuration without requesting or revealing credentials',async()=>{const {$,context,run}=setup();context.fetch=async()=>({ok:true,json:async()=>({instagram:{message:'Setup required',missing:['INSTAGRAM_ACCESS_TOKEN']},gemini:{provider:'api-key'},storage:{state:'not_connected'},bigquery:{state:'not_connected'},vertex:{state:'not_selected'}})});await run('refreshIntegrationStatus()');assert.equal($('instagramStatus').textContent,'Setup required');assert.match($('cloudStatus').textContent,/not_connected/);assert.equal($('refreshInstagramStatus').disabled,false)});
+
+test('caption generation, editing and approval preserve product and selling-price approvals',async()=>{
+ const {$,context}=setup();context.fetch=async()=>({ok:false});$('confirmed').checked=true;$('price').value='1000';$('priceApproved').checked=true;
+ $('priceApproved').onchange();assert.equal($('confirmed').checked,true);
+ await $('generateSocial').onclick();assert.equal($('confirmed').checked,true);assert.equal($('priceApproved').checked,true);
+ $('social_instagram_caption').dispatch('input');$('socialApproved').checked=true;$('socialApproved').onchange();
+ assert.equal($('confirmed').checked,true);assert.equal($('priceApproved').checked,true);
+ $('price').value='1100';$('price').dispatch('input');assert.equal($('priceApproved').checked,false);assert.equal($('confirmed').checked,true);
+});
+test('English fallback keeps the selected language and duplicate generation is ignored',async()=>{
+ const {$,context,run}=setup();$('confirmed').checked=true;$('language').value='en';let resolve,calls=0;
+ context.fetch=()=>{calls++;return new Promise(r=>resolve=r)};const pending=$('generateSocial').onclick();await $('generateSocial').onclick();assert.equal(calls,1);resolve({ok:false});await pending;
+ assert.equal(run('socialDraft.language'),'en');assert.match(run('socialDraft.instagram_caption'),/Discover/);
+});
+test('fresh cost advice does not revoke approval for an unchanged seller amount',async()=>{
+ const {$}=setup();$('confirmed').checked=true;$('price').value='1250';$('priceApproved').checked=true;await $('calculatePricing').onclick();assert.equal($('price').value,'1250');assert.equal($('priceApproved').checked,true);assert.equal($('confirmed').checked,true);
+});
