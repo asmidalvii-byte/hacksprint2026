@@ -1,7 +1,7 @@
 import { AppError } from './errors.js';
 // https://docs.sarvam.ai/api-reference/text-to-speech/convert : POST /text-to-speech,
 // header api-subscription-key, body {text, language_code, model}, response {audios:[base64 wav], request_id}.
-const LANGUAGE_CODES = { hi: 'hi-IN', ta: 'ta-IN', te: 'te-IN', kn: 'kn-IN', bn: 'bn-IN' };
+const LANGUAGE_CODES = { en: 'en-IN', hi: 'hi-IN', ta: 'ta-IN', te: 'te-IN', kn: 'kn-IN', bn: 'bn-IN' };
 // bulbul:v2 caps text at 1500 chars; v3 and v4-flash cap at 2500 (per the docs above).
 const MAX_TEXT_LENGTH = { 'bulbul:v2': 1500, 'bulbul:v3': 2500, 'bulbul:v4-flash': 2500 };
 export function maxTextLength(model) { return MAX_TEXT_LENGTH[model] || 1500; }

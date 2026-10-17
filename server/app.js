@@ -1,3 +1,4 @@
+import {installSellers, sellerConfig} from './sellers.js';
 import { integrationStatus } from './integrations.js';
 import express from 'express';
 import multer from 'multer';
@@ -16,10 +17,11 @@ import { createVoiceSynth } from './sarvam.js';
 const root = fileURLToPath(new URL('../', import.meta.url));
 export function createApp({ config, analyze = createAnalyzer(config), priceProduct = createPricing(config), marketProduct = createMarketing(config), synthesizeVoice = createVoiceSynth(config) }) {
   const app = express();
+  const accounts=sellerConfig();
   app.disable('x-powered-by');
   app.use((req, res, next) => {
     res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" });
+      'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' data:; connect-src 'self' ${accounts.configured?new URL(accounts.url).origin:''}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'` });
     next();
   });
   app.get('/api/integrations', (req,res)=>res.json(integrationStatus()));
@@ -34,6 +36,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
     }
     next();
   });
+  installSellers(app,{settings:accounts});
   const limiter = rateLimit({ windowMs: 60000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false,
     message: { error: { code: 'RATE_LIMITED', message: 'Too many requests. Wait a minute or use a sample draft.' } } });
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.maxUploadBytes, files: 1, fields: 2, fieldSize: 10000, parts: 3 } });
@@ -103,8 +106,9 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
     active++;
     try {res.json(await marketProduct(input));} catch(error){next(error);} finally{active--;}
   });
+  app.get('/vendor/supabase.js',(req,res)=>res.sendFile(root+'node_modules/@supabase/supabase-js/dist/umd/supabase.js'));
   app.get('/shared/pricing.js', (req,res) => res.sendFile(root + 'shared/pricing.js'));
-  for (const file of ['index.html', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css', 'i18n.js', 'screens.js']) app.get(file === 'index.html' ? ['/', '/index.html'] : `/${file}`, (req, res) => res.sendFile(root + file));
+  for (const file of ['index.html', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'account-ui.js', 'workflow-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css', 'i18n.js', 'screens.js']) app.get(file === 'index.html' ? ['/', '/index.html'] : `/${file}`, (req, res) => res.sendFile(root + file));
   app.use((req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Not found.' } }));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);

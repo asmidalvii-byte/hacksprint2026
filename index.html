@@ -9,6 +9,21 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<section class="account-panel" aria-label="Seller account">
+<details open><summary>Kriti · Seller account</summary>
+<p id="account_status" role="status">Checking account setup…</p>
+<form id="account_form"><label for="account_email">Email</label><input id="account_email" type="email" autocomplete="username" required><label for="account_password">Password</label><input id="account_password" type="password" autocomplete="current-password" minlength="8" required><div class="actions"><button id="account_login" type="submit">Sign in</button><button id="account_register" type="button">Register</button><button id="account_reset" type="button">Reset password</button></div></form>
+<form id="account_new_password" hidden><label for="account_replacement">New password</label><input id="account_replacement" type="password" autocomplete="new-password" minlength="8" required><button type="submit">Save new password</button></form>
+<button id="account_logout" type="button" hidden>Sign out</button>
+<details id="account_products" hidden><summary>Saved products</summary><button id="account_refresh" type="button">Refresh products</button><div id="account_product_list"></div></details>
+<details><summary>Verify your business</summary><p>Identity: <strong id="verification_identity">Not started</strong> · Business: <strong id="verification_business">Not started</strong> · GST: <strong id="verification_gst">Not started</strong></p>
+<p id="verification_status" role="status">Verification setup required. No authorized provider is connected.</p>
+<p>When available, verification will request your legal name, business name, business type, state and address. GSTIN is optional for businesses that are registered. Identity documents will be requested only if required by the authorized provider.</p>
+<details><summary>Privacy and consent</summary><p>No identity documents, Aadhaar, PAN or GSTIN are collected here while verification is unavailable. Provider-specific consent and retention terms must be shown before submission is enabled.</p></details>
+<button id="verification_submit" type="button">Check verification availability</button><button id="verification_refresh" type="button">Refresh my status</button></details>
+</details></section>
+<div id="workspace" hidden>
+
 <div id="app">
 
 <!-- SCREEN 1: language selection -->
@@ -166,8 +181,8 @@
           <p data-i18n="priceNote">Only you set the value — never estimated from a photo.</p>
         </div>
         <label class="check"><input type="checkbox" id="includePrice"> <span data-i18n="includePriceLabel">Include my price in the ad</span></label>
-        <details class="analysis-panel">
-          <summary data-i18n="editDetails">Edit details</summary>
+        <details class="analysis-panel" open>
+          <summary>Review selling price</summary>
           <section aria-label="Pricing assistance">
             <h3 data-i18n="pricingTitle">Pricing &amp; positioning</h3>
             <p data-i18n="pricingIntro">Suggestions only — not a live market price.</p>
@@ -199,7 +214,7 @@
             <div id="pricingResult" role="status" data-i18n="noEstimateYet">No estimate yet.</div>
             <button id="acceptPricing" class="secondary" type="button" data-i18n="acceptPricingBtn">Accept into empty price field</button>
             <button id="rejectPricing" class="text-button" type="button" data-i18n="rejectPricingBtn">Reject recommendation</button>
-            <label class="check"><input id="priceApproved" type="checkbox"> <span data-i18n="priceApprovedLabel">I approve my entered price and currency.</span></label>
+            <input id="priceApproved" type="checkbox" hidden aria-label="Selling price approved"><button id="approvePrice" type="button">Approve Selling Price</button><p id="priceApprovalStatus" role="status">Selling price needs approval.</p>
             <label for="positioning" data-i18n="positioningLabel">Intended price positioning</label>
             <select id="positioning">
               <option value="unclassified" data-i18n="posNeutral">Neutral / unclassified</option>
@@ -216,9 +231,10 @@
             <pre id="marketingResult" data-i18n="marketingPlaceholder">Approve a price to generate captions and WhatsApp copy.</pre>
           </section>
         </details>
-        <label class="check"><input type="checkbox" id="confirmed"> <span data-i18n="confirmedLabel">I have reviewed the product details and price.</span></label>
+        <label class="check"><input type="checkbox" id="confirmed"> <span>I approve these product details.</span></label>
       </form>
     </div>
+    <p id="workflowStatus" role="status">Review product details to continue.</p>
     <button type="button" id="reportContinue" class="primary wide" data-i18n="continueToSell">Continue</button>
   </div>
 </section>
@@ -344,12 +360,14 @@
 </section>
 
 </div>
-<div class="toast" id="toast" role="status" hidden></div>
+</div><div class="toast" id="toast" role="status" hidden></div>
 <footer>
-  <span>Dukaan-Scan AI</span>
+  <span>Kriti</span>
   <span>Made for the hands that make things.</span>
   <span>PS 21 + PS 42 + PS 41</span>
 </footer>
+<script src="vendor/supabase.js"></script>
+<script src="account-ui.js"></script>
 <script src="i18n.js"></script>
 <script src="shared/pricing.js"></script>
 <script src="app.js"></script>
@@ -358,5 +376,6 @@
 <script src="draft-storage.js"></script>
 <script src="draft-persistence.js"></script>
 <script src="screens.js"></script>
+<script src="workflow-ui.js"></script>
 </body>
 </html>

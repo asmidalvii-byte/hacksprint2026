@@ -104,7 +104,7 @@ window.addEventListener('beforeunload',stop);
 if(document.modelContext?.registerTool){const life=new AbortController();try{Promise.resolve(document.modelContext.registerTool({name:'read_catalog_draft',description:'Read the current editable merchant catalog draft without exporting it.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute(input){if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length)throw new Error('Expected an empty object');if(!ready)throw new Error('Create a draft first');return catalog()}},{signal:life.signal})).catch(()=>{});}catch{}window.addEventListener('pagehide',()=>life.abort(),{once:true})}
 
 function cancelAnalysis(){requestSequence++;analysisController?.abort();analysisController=null;$('generate').disabled=false;$('generate').textContent=i18nText('analyzeButton','Analyze my product')}
-function newProduct(){
+function newProduct(){if(typeof beginCloudProduct==='function')beginCloudProduct();
   if(typeof invalidateSocial==='function')invalidateSocial();
   cancelAnalysis();productVersion++;resetPricing();currentFile=null;analysis=null;appliedAnalysis=null;acceptedFields=[];draftSource='sample';
   for(const id of ['title','description','material','condition','price','notes'])$(id).value='';

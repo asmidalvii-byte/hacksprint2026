@@ -94,6 +94,7 @@
     $('backFromReport').onclick = () => show('screen-home');
     $('reportContinue').onclick = () => {
       if (!$('confirmed').checked) { if (typeof toast === 'function') toast('Review the details and check the confirmation box before continuing.'); return; }
+      if(!$('priceApproved').checked||!priceValid()){toast('Enter and approve a valid selling price before continuing.');return}
       show('screen-destinations');
     };
     $('backFromDestinations').onclick = () => show('screen-report');
