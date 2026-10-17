@@ -72,16 +72,25 @@ window.KritiAccount.ready=(async()=>{
   window.fetch=async(input,init={})=>{if(typeof input==='string'&&input.startsWith('/api/')){const {data:{session}}=await account.client.auth.getSession();const headers=new Headers(init.headers);if(session)headers.set('Authorization','Bearer '+session.access_token);return accountNativeFetch(input,{...init,headers})}return accountNativeFetch(input,init)};
   let accessGeneration=0;
   const apply=session=>{
-   const generation=++accessGeneration;account.user=session?.user||null;account.accessAllowed=false;
+   const generation=++accessGeneration;account.user=session?.user||null;account.accessAllowed=false;account.demoAccess=false;
+   document.getElementById('account_test_notice').hidden=true;
    document.getElementById('workspace').hidden=true;document.getElementById('account_form').hidden=Boolean(account.user);document.getElementById('account_logout').hidden=!account.user;document.getElementById('account_products').hidden=true;
    document.getElementById('account_modes').hidden=Boolean(account.user);document.getElementById('account_story').hidden=Boolean(account.user);document.getElementById('account_verification').hidden=!account.user;
    message.textContent=account.user?'Signed in. Checking business approval…':'Sign in to save your products securely.';
    if(!account.user)return;
    document.getElementById('account_heading').textContent='Your business account';document.getElementById('account_intro').textContent='Business approval is required to open your seller workspace.';
-   accountNativeFetch('/api/seller/verification',{headers:{Authorization:'Bearer '+session.access_token}}).then(async r=>{if(!r.ok)throw Error();const result=await r.json();if(generation!==accessGeneration)return;account.accessAllowed=result.data?.access_allowed===true;document.getElementById('workspace').hidden=!account.accessAllowed;document.getElementById('account_products').hidden=!account.accessAllowed;message.textContent=account.accessAllowed?'Signed in as '+account.user.email:'Signed in. Business approval is still required. Sample checks do not grant access.'}).catch(()=>{if(generation===accessGeneration)message.textContent='Signed in, but business approval could not be confirmed. Refresh your status to retry.'});
+   const get=async path=>{try{const r=await accountNativeFetch(path,{headers:{Authorization:'Bearer '+session.access_token}});return r.ok?await r.json():null}catch{return null}};
+   return Promise.all([get('/api/seller/verification'),get('/api/seller/demo-access')]).then(([result,demo])=>{
+    if(generation!==accessGeneration)return;
+    account.demoAccess=demo?.demo_access===true;account.accessAllowed=result?.data?.access_allowed===true||account.demoAccess;
+    document.getElementById('workspace').hidden=!account.accessAllowed;document.getElementById('account_products').hidden=!account.accessAllowed||account.demoAccess;
+    const notice=document.getElementById('account_test_notice');notice.hidden=!account.demoAccess;notice.textContent=account.demoAccess?demo.notice:'';
+    document.getElementById('account_intro').textContent=account.demoAccess?'Your test workspace is ready. Registration verification is still a separate step.':'Business approval is required to open your seller workspace.';
+    message.textContent=account.demoAccess?'Test account — business not verified':account.accessAllowed?'Signed in as '+account.user.email:result?'Signed in. Business approval is still required. Sample checks do not grant access.':'Signed in, but business approval could not be confirmed. Refresh your status to retry.';
+   });
   };
   account.refreshAccess=async()=>{const {data:{session}}=await account.client.auth.getSession();apply(session)};
-  const {data:{session},error}=await account.client.auth.getSession();if(error)throw error;apply(session);
+  const {data:{session},error}=await account.client.auth.getSession();if(error)throw error;await apply(session);
   account.client.auth.onAuthStateChange((event,session)=>{if(event==='PASSWORD_RECOVERY'){document.getElementById('account_new_password').hidden=false;document.getElementById('workspace').hidden=true;return}if(event==='SIGNED_OUT'){location.reload();return}if(session?.user.id!==account.user?.id&&event==='SIGNED_IN'){location.reload();return}apply(session)});
   let signingIn=false,resetting=false;
   document.getElementById('account_form').onsubmit=async e=>{

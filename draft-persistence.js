@@ -1,4 +1,5 @@
 const draftStore=DukaanDraftStorage.createStore(globalThis.indexedDB);
+function localDraftStore(account){return account?.demoAccess?DukaanDraftStorage.createStore(globalThis.indexedDB,'test-account:'+account.user.id):draftStore}
 let draftSaveTimer,draftInteracted=false,draftRestoring=true,draftSaveChain=Promise.resolve(),cloudProductId=null,cloudImagePath=null,cloudImageFile=null;
 function draftControls(){return [...document.querySelectorAll('input[id],textarea[id],select[id]')].filter(el=>el.type!=='file'&&!/^(account_|verification_)/.test(el.id))}
 function captureDraft(){return {version:2,savedAt:new Date().toISOString(),fields:Object.fromEntries(draftControls().map(el=>[el.id,{value:el.value,checked:el.checked}])),file:currentFile,ready,sample,analysis,appliedAnalysis,acceptedFields,draftSource,pricingResult,marketingResult,socialDraft,socialDirty,socialContextStale};}
@@ -6,14 +7,15 @@ function beginCloudProduct(){cloudProductId=null;cloudImagePath=null;cloudImageF
 function saveDraft(){
  if(draftRestoring)return Promise.resolve(false);if(!ready&&!currentFile&&!$('title').value.trim())return Promise.resolve(true);const snapshot=captureDraft(),account=window.KritiAccount;
  if(account?.configured&&!account.user)return Promise.resolve(false);
- if(account?.configured&&!cloudProductId)cloudProductId=crypto.randomUUID();const id=cloudProductId;
+ const cloud=account?.configured&&!account.demoAccess;
+ if(cloud&&!cloudProductId)cloudProductId=crypto.randomUUID();const id=cloudProductId;
  draftSaveChain=draftSaveChain.catch(()=>false).then(async()=>{
-  if(account?.configured){
+  if(cloud){
    let imagePath=cloudImagePath;
    if(snapshot.file&&snapshot.file!==cloudImageFile){imagePath=account.user.id+'/'+crypto.randomUUID();const {error}=await account.client.storage.from('product-images').upload(imagePath,snapshot.file,{contentType:snapshot.file.type,upsert:false});if(error)throw error;if(id===cloudProductId){cloudImagePath=imagePath;cloudImageFile=snapshot.file}}
    const {file,...serialized}=snapshot;const response=await fetch('/api/products/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({snapshot:serialized,image_path:imagePath})});if(!response.ok)throw Error();
-  }else await draftStore.save(snapshot);
-  $('draftSaveStatus').textContent=(account?.configured?'Saved to your account at ':'Saved on this device at ')+new Date(snapshot.savedAt).toLocaleTimeString();return true;
+  }else await localDraftStore(account).save(snapshot);
+  $('draftSaveStatus').textContent=(cloud?'Saved to your account at ':'Saved on this device at ')+new Date(snapshot.savedAt).toLocaleTimeString();return true;
  }).catch(()=>{$('draftSaveStatus').textContent='Saving failed. Your edits remain in this tab. Retry before closing.';return false});return draftSaveChain;
 }
 function scheduleDraftSave(event){if(event?.target?.id==='approvePrice')return;if(event?.target?.id&&/^(account_|verification_)/.test(event.target.id))return;draftInteracted=true;clearTimeout(draftSaveTimer);draftSaveTimer=setTimeout(()=>void saveDraft(),500)}
@@ -39,7 +41,7 @@ async function loadCloudProduct(id){
 }
 async function restoreDraft(){try{
  await window.KritiAccount?.ready;
- if(window.KritiAccount?.configured){if(window.KritiAccount.user){const r=await fetch('/api/products');if(!r.ok)throw Error();const rows=await r.json();if(rows.length&&!draftInteracted)await loadCloudProduct(rows[0].id);void window.KritiAccount.listProducts()}return}
- const saved=await draftStore.load();if(!saved||![1,2].includes(saved.version)||draftInteracted)return;applySavedDraft(saved);$('draftSaveStatus').textContent='Device draft restored. Saved approvals retained for unchanged details.';
+ if(window.KritiAccount?.configured&&!window.KritiAccount.demoAccess){if(window.KritiAccount.user&&window.KritiAccount.accessAllowed){const r=await fetch('/api/products');if(!r.ok)throw Error();const rows=await r.json();if(rows.length&&!draftInteracted)await loadCloudProduct(rows[0].id);void window.KritiAccount.listProducts()}return}
+ const saved=await localDraftStore(window.KritiAccount).load();if(!saved||![1,2].includes(saved.version)||draftInteracted)return;applySavedDraft(saved);$('draftSaveStatus').textContent='Device draft restored. Saved approvals retained for unchanged details.';
  }catch{$('draftSaveStatus').textContent='Draft storage unavailable. Keep this tab open and export JSON.'}finally{draftRestoring=false}}
 void restoreDraft();void refreshIntegrationStatus();

@@ -2,6 +2,7 @@ import {createClient} from '@supabase/supabase-js';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import {createGstSandbox} from './gst-sandbox.js';
+import {testAccountConfig,hasTestAccountAccess,testAccountNotice} from './test-account-access.js';
 import {safeBusinessDetails, udyamFormatValid, gstFormatValid, providerResult, businessAccess} from './verification.js';
 export function sellerConfig(env=process.env){
  const url=env.SUPABASE_URL||'',key=env.SUPABASE_PUBLISHABLE_KEY||env.SUPABASE_ANON_KEY||'';
@@ -17,7 +18,7 @@ export function validSnapshot(value){
  if(approved&&(!price||!Number.isFinite(Number(price.value))||Number(price.value)<=0||Number(price.value)>10000000))return false;
  return true;
 }
-export function installSellers(app,{settings=sellerConfig(),clientFactory=createClient,gstSandbox=createGstSandbox()}={}){
+export function installSellers(app,{settings=sellerConfig(),clientFactory=createClient,gstSandbox=createGstSandbox(),testAccounts=testAccountConfig()}={}){
  app.get('/api/account-config',(req,res)=>res.json({configured:settings.configured,setupRequired:settings.requested&&!settings.configured,url:settings.configured?settings.url:null,key:settings.configured?settings.key:null}));
  app.get('/api/demo/verification',(req,res)=>res.json({
   demo:true, authoritative:false, notice:'Demonstration data only. No Udyam or GSTIN check was performed.',
@@ -32,6 +33,9 @@ export function installSellers(app,{settings=sellerConfig(),clientFactory=create
   if(!settings.configured)return res.status(503).json({code:'ACCOUNT_SETUP_REQUIRED',business_status:null,next_action:'configure_accounts',message:'Seller account setup required.'});
   const token=req.get('authorization')?.match(/^Bearer (.+)$/)?.[1];if(!token)return res.status(401).json({error:{message:'Sign in to continue.'}});
   try{const db=client(token),{data,error}=await db.auth.getUser(token);if(error||!data.user)return res.status(401).json({error:{message:'Session expired. Sign in again.'}});req.seller=data.user.id;req.sellerDb=db;
+   req.testAccount=hasTestAccountAccess(data.user,req.socket.remoteAddress,testAccounts);
+   if(req.path==='/seller/demo-access')return next();
+   if(req.testAccount&&req.method==='POST'&&['/analyze-product','/pricing','/marketing','/voice-ad'].includes(req.path)){res.set('X-Kriti-Access-Mode','test-account');return next()}
    const verificationRoutes=new Set(['/verification','/seller/verification','/seller/verification/business','/seller/verification/udyam','/seller/verification/gst','/seller/verification/gst/sandbox','/seller/verification/review','/seller/verification/retry']);
    if(verificationRoutes.has(req.path))return next();
    const {data:records,error:verificationError}=await db.from('seller_verifications').select('kind,status,provider_reference,verified_at,expires_at').eq('seller_id',req.seller);
@@ -41,6 +45,7 @@ export function installSellers(app,{settings=sellerConfig(),clientFactory=create
    next()}catch{res.status(503).json({error:{message:'Account verification unavailable. Try again.'}})}
  });
  const safe=fn=>async(req,res)=>{try{await fn(req,res)}catch{res.status(503).json({error:{message:'Saving or loading failed. Your edits remain in this tab.'}})}};
+ app.get('/api/seller/demo-access',(req,res)=>res.json({demo_access:!!req.testAccount,business_verified:false,storage:req.testAccount?'device':null,notice:req.testAccount?testAccountNotice:null}));
  const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
  app.get('/api/products',safe(async(req,res)=>{const {data,error}=await req.sellerDb.from('products').select('id,title,updated_at').eq('seller_id',req.seller).order('updated_at',{ascending:false}).limit(100);if(error)throw error;res.json(data)}));
  app.get('/api/products/:id',safe(async(req,res)=>{if(!uuid.test(req.params.id))return res.sendStatus(400);const {data,error}=await req.sellerDb.from('products').select('id,snapshot,image_path').eq('seller_id',req.seller).eq('id',req.params.id).maybeSingle();if(error)throw error;if(!data)return res.sendStatus(404);res.json(data)}));
