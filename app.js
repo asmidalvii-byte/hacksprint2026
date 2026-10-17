@@ -3,13 +3,14 @@ let currentFile=null, productVersion=0, requestSequence=0, uploadSequence=0, ana
 const samples={saree:['Saree for everyday celebrations','A saree to style for everyday moments and special occasions. Confirm the fabric, dimensions, care instructions and available colours with the seller.'],pot:['Decorative pottery for your home','Bring a personal touch to your space with this pottery piece. Confirm the material, dimensions, finish and intended use with the seller.'],jewelry:['An accessory for your everyday style','Complete your look with this accessory. Confirm the material, measurements, finish and care instructions with the seller.'],other:['A special find from your local shop','Discover a product from your local merchant. Confirm the material, dimensions, condition and care instructions before ordering.']};
 const words={hi:['अपने पसंदीदा स्थानीय दुकानदार से कुछ खास खरीदें।','जानकारी और ऑर्डर के लिए हमसे संपर्क करें।','कीमत','रुपये'],ta:['உங்கள் உள்ளூர் கடையில் சிறப்பான பொருளை வாங்குங்கள்.','விவரங்களுக்கும் ஆர்டர் செய்யவும் எங்களைத் தொடர்பு கொள்ளுங்கள்.','விலை','ரூபாய்'],te:['మీ స్థానిక దుకాణంలో ప్రత్యేకమైన వస్తువును కొనండి.','వివరాలు మరియు ఆర్డర్ కోసం మమ్మల్ని సంప్రదించండి.','ధర','రూపాయలు'],kn:['ನಿಮ್ಮ ಸ್ಥಳೀಯ ಅಂಗಡಿಯಿಂದ ವಿಶೇಷವಾದ ವಸ್ತುವನ್ನು ಖರೀದಿಸಿ.','ವಿವರಗಳು ಮತ್ತು ಆರ್ಡರ್‌ಗಾಗಿ ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ.','ಬೆಲೆ','ರೂಪಾಯಿ'],bn:['আপনার স্থানীয় দোকান থেকে বিশেষ কিছু কিনুন।','বিস্তারিত জানতে এবং অর্ডার করতে আমাদের সঙ্গে যোগাযোগ করুন।','দাম','টাকা']};
 function toast(s){$('toast').textContent=s;$('toast').hidden=false;clearTimeout(timer);timer=setTimeout(()=>$('toast').hidden=true,4500)}
+function i18nLabel(key,fallback){try{return window.DukaanI18n?'▶ '+DukaanI18n.get(window.DukaanScreens?.currentLang()||'en',key):fallback}catch{return fallback}}
 function stop(){window.speechSynthesis?.cancel();$('play').textContent='▶ Play voice preview';$('stop').disabled=true;$('sarvamAudio').pause?.()}
 function priceValid(){const p=$('price');return p.value!==''&&p.validity.valid&&Number(p.value)>0}
 function makeAd(){if(!ready)return;stop();const w=words[$('language').value],priced=$('includePrice').checked&&priceValid()&&$('priceApproved').checked;$('ad').value=[$('title').value+'.',w[0],priced?`${w[2]} ${Number($('price').value).toLocaleString('en-IN')} ${$('p_currency').value==='INR'?w[3]:$('p_currency').value}.`:'',w[1]].filter(Boolean).join(' ');$('priceStatus').textContent=priced?'Merchant-entered price included':'No price in this ad';$('voiceStatus').textContent='Template ad: the product title stays as written. You can edit the script.'}
 async function upload(file){if(!file)return;const uploadId=++uploadSequence;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>10*1024*1024){toast('Choose a JPG, PNG or WebP image under 10 MB.');return}const next=URL.createObjectURL(file),img=new Image();try{await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=next})}catch{URL.revokeObjectURL(next);toast('This image could not be opened. Try another photo.');return}if(uploadId!==uploadSequence){URL.revokeObjectURL(next);return}newProduct();currentFile=file;$('file').value='';if(photoURL)URL.revokeObjectURL(photoURL);photoURL=next;sample=false;$('preview').src=next;$('preview').hidden=false;$('uploadIcon').hidden=true;$('uploadLabel').textContent=file.name;$('uploadHelp').textContent='Click to replace photo';resetDraft();toast('Photo added. Choose a category and create your draft.');if(typeof saveDraft==='function')void saveDraft()}
-function resetDraft(){stop();ready=false;$('listing').hidden=true;$('empty').hidden=false;$('draftTag').textContent='AWAITING DRAFT';$('ad').value='';$('ad').disabled=true;['play','copy','sarvamPlay'].forEach(x=>$(x).disabled=true);$('sarvamAudio').hidden=true;$('sarvamAudio').src='';$('confirmed').checked=false;$('voiceStatus').textContent='';$('priceStatus').textContent='Price stays in your hands'}
+function resetDraft(){stop();ready=false;$('listing').hidden=true;$('empty').hidden=false;$('draftTag').textContent='AWAITING DRAFT';$('ad').value='';$('ad').disabled=true;['play','copy','sarvamPlay','reportListen'].forEach(x=>$(x).disabled=true);$('sarvamAudio').hidden=true;$('sarvamAudio').src='';$('reportAudio').hidden=true;$('reportAudio').src='';$('confirmed').checked=false;$('voiceStatus').textContent='';$('reportListenStatus').textContent='';$('priceStatus').textContent='Price stays in your hands'}
 $('drop').onclick=()=>$('file').click();$('file').onchange=e=>upload(e.target.files[0]);$('drop').ondragover=e=>{e.preventDefault();$('drop').classList.add('drag')};$('drop').ondragleave=()=>$('drop').classList.remove('drag');$('drop').ondrop=e=>{e.preventDefault();$('drop').classList.remove('drag');upload(e.dataTransfer.files[0])};
-function showEditor(){ready=true;$('listing').hidden=false;$('empty').hidden=true;$('draftTag').textContent='EDITABLE DRAFT';$('ad').disabled=false;['play','copy','sarvamPlay'].forEach(x=>$(x).disabled=false)}
+function showEditor(){ready=true;$('listing').hidden=false;$('empty').hidden=true;$('draftTag').textContent='EDITABLE DRAFT';$('ad').disabled=false;['play','copy','sarvamPlay','reportListen'].forEach(x=>$(x).disabled=false);window.DukaanScreens?.show('screen-report')}
 function generate(){
   if(!photoURL&&!sample){toast('Add a product photo or try the sample saree.');return}
   if(typeof invalidateSocial==='function')invalidateSocial();invalidatePricing();const d=samples[$('category').value];
@@ -45,7 +46,21 @@ $('sarvamPlay').onclick=async()=>{
     $('sarvamAudio').src='data:audio/'+(body.format||'wav')+';base64,'+body.audio;$('sarvamAudio').hidden=false;$('sarvamAudio').play?.();
     $('voiceStatus').textContent='Playing Sarvam audio ('+body.model+'). This is a real generated clip, not a device voice.';
   }catch{$('sarvamAudio').hidden=true;$('voiceStatus').textContent='Sarvam request failed. Use device playback or copy the script.'}
-  finally{$('sarvamPlay').disabled=false;$('sarvamPlay').textContent='▶ Generate Sarvam audio'}
+  finally{$('sarvamPlay').disabled=false;$('sarvamPlay').textContent=i18nLabel('generateAudio','▶ Generate Sarvam audio')}
+};
+$('reportListen').onclick=async()=>{
+  const text=[$('title').value.trim(),$('description').value.trim()].filter(Boolean).join('. ');
+  if(!text){toast('Add a title or description first.');return}
+  $('reportAudio').pause?.();$('reportListen').disabled=true;$('reportListenStatus').textContent='Requesting audio…';
+  try{
+    const response=await fetch('/api/voice-ad',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,language:$('language').value,reviewed:true})});
+    const body=await response.json().catch(()=>({}));
+    if(!response.ok){$('reportAudio').hidden=true;$('reportListenStatus').textContent=body.error?.message||'Report audio is not available right now.';return}
+    if(typeof body.audio!=='string'||!body.audio){$('reportAudio').hidden=true;$('reportListenStatus').textContent='No audio was returned.';return}
+    $('reportAudio').src='data:audio/'+(body.format||'wav')+';base64,'+body.audio;$('reportAudio').hidden=false;$('reportAudio').play?.();
+    $('reportListenStatus').textContent='Playing report audio ('+body.model+').';
+  }catch{$('reportAudio').hidden=true;$('reportListenStatus').textContent='Report audio request failed.'}
+  finally{$('reportListen').disabled=false}
 };
 function catalog(){return {schema:'dukaan-scan.catalog-draft.v3',status:'draft',ondc_submission_ready:false,requires:['ONDC seller onboarding','Category and attribute mapping','Hosted product image','Fulfilment, tax and availability information','Protocol validation'],product:{title:$('title').value.trim(),description:$('description').value.trim(),category:$('category').value,material:$('material').value.trim()||null,condition:$('condition').value||null,price:priceValid()?{currency:$('p_currency').value,value:Number($('price').value).toFixed(2),source:'merchant'}:null,image_status:photoURL?'local_photo_not_exported':'sample_without_photo'},pricing:pricingExport(),marketing:marketingResult,social_marketing:typeof socialExport==='function'?socialExport():null,product_intelligence:appliedAnalysis?.intelligence?{...appliedAnalysis.intelligence,product_identity:{...appliedAnalysis.intelligence.product_identity,merchant_edited_title:$('title').value},pricing_analysis:pricingExport(),marketing_content:typeof socialExport==='function'?socialExport():null,review_status:$('confirmed').checked?'approved':'pending'}:null,ad:{language:$('language').value,script:$('ad').value,price_included:$('includePrice').checked&&priceValid()&&$('priceApproved').checked,voice_provider:'device_preview'},provenance:{image_analysis:(appliedAnalysis||analysis)?'gemini':'not_performed',copy:draftSource,merchant_reviewed:$('confirmed').checked},analysis:appliedAnalysis?{...appliedAnalysis,merchantReview:{...appliedAnalysis.merchantReview,status:$('confirmed').checked?'approved':'pending',approvedFields:$('confirmed').checked?[...acceptedFields]:[]}}:null}}
 $('export').onclick=()=>{if(!$('title').value.trim()){toast('Add a product title before exporting.');return}if($('price').value&&!priceValid()){toast('Enter a positive price with up to two decimal places, or leave it blank.');return}if(!$('confirmed').checked){toast('Review the details and check the confirmation box before exporting.');return}if(typeof socialExport==='function'&&socialExport()&&socialExport().review_status!=='approved'){toast('Review and approve the marketing draft before exporting.');return}let output;try{output=catalog()}catch{toast('Check pricing inputs before exporting.');return}const url=URL.createObjectURL(new Blob([JSON.stringify(output,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='dukaan-catalog-draft.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Catalog draft downloaded. ONDC integration is still required.')};
@@ -101,6 +116,8 @@ async function analyzePhoto(){
   analysisController=new AbortController();const controller=analysisController;
   const timeout=setTimeout(()=>controller.abort(),requestTimeoutMs);
   $('generate').disabled=true;$('generate').textContent='Analyzing…';$('aiStatus').textContent='Sending photo and notes for AI analysis…';
+  $('analyzeErrorBox').hidden=true;if(photoURL){$('analyzingPreview').src=photoURL;$('analyzingPreview').hidden=false}else $('analyzingPreview').hidden=true;
+  window.DukaanScreens?.show('screen-analyzing');
   const form=new FormData();form.append('image',currentFile);form.append('notes',$('notes').value);form.append('category',$('category').value);
   try{
     const response=await fetch('/api/analyze-product',{method:'POST',body:form,signal:controller.signal});
@@ -113,9 +130,11 @@ async function analyzePhoto(){
     analysis=result;renderAnalysis();if(!ready){$('applyAnalysis').onclick();}if(typeof saveDraft==='function')void saveDraft();
     $('aiStatus').textContent='Analysis received. Review the evidence and apply supported suggestions.';
     $('confirmed').checked=false;
+    window.DukaanScreens?.show('screen-report');
   }catch(error){
     if(request!==requestSequence||version!==productVersion)return;
-    $('aiStatus').textContent=error.name==='AbortError'?'Analysis timed out. Retry or use a sample draft.':error.message;
+    const message=error.name==='AbortError'?'Analysis timed out. Retry or use a sample draft.':error.message;
+    $('aiStatus').textContent=message;$('analyzeErrorText').textContent=message;$('analyzeErrorBox').hidden=false;
   }finally{
     clearTimeout(timeout);
     if(request===requestSequence){analysisController=null;$('generate').disabled=false;$('generate').textContent='Generate my listing'}

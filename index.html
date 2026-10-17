@@ -1,1 +1,362 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dukaan-Scan · Merchant Studio</title><meta name="description" content="Turn product photos into editable catalog drafts and regional-language ads. You control the price."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%232548e8'/%3E%3Cpath d='M11 10h7q13 0 13 10T18 30h-7z' fill='white'/%3E%3C/svg%3E"><link rel="stylesheet" href="style.css"></head><body><header><a class="brand" href="./"><span class="logo">D</span>Dukaan<span class="brand-light">Scan</span><span class="ai">AI</span></a><span class="mode">Interactive demo</span></header><main><div class="intro"><div><p class="eyebrow">YOUR DIGITAL DUKAAN, STARTS HERE</p><h1>One photo. A world of customers.</h1><p>Build your listing. Tell your story. Sell in your customer's language.</p></div><span class="edition">MERCHANT STUDIO <b>01 / CATALOG</b></span></div><div class="steps"><span class="active">01 <b>Add a product</b></span><span>02 <b>Make it yours</b></span><span>03 <b>Speak their language</b></span></div><div class="workspace"><section class="panel upload-panel"><div class="section-head"><h2>Your product</h2><span class="tag">STEP 01</span></div><input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden><button class="drop" id="drop"><span id="uploadIcon" class="upload-icon">＋</span><img id="preview" alt="Your uploaded product" hidden><strong id="uploadLabel">Drop your product photo here</strong><span id="uploadHelp">or click to browse · JPG, PNG, WebP · up to 10 MB</span></button><p class="privacy">Sample mode keeps photos in this browser. AI analysis sends your photo and notes to the configured Google service; this app does not store them.</p><label for="category">Product category</label><select id="category"><option value="saree">Saree & textiles</option><option value="pot">Pottery & homeware</option><option value="jewelry">Jewellery & accessories</option><option value="other">Other handmade products</option></select><label for="notes">Seller notes <span>Optional</span></label><textarea id="notes" maxlength="4000" rows="2" placeholder="Known facts, label text or details to check"></textarea><button class="primary wide" id="generate">Generate my listing <span>✦</span></button><p id="aiStatus" class="service-status" role="status">Checking AI configuration…</p><button class="secondary wide" id="fallback" type="button">Use category sample draft</button><button class="text-button wide" id="sample">No photo? Try a sample saree</button><div class="note"><b>A little honesty, by design.</b><p>AI suggestions need your review. Evidence describes what the image or your notes support; it does not verify authenticity. Sample drafts remain available without AI.</p></div><div class="bottom-note">DESIGNED FOR LOCAL SHOPS. BUILT FOR BIG IDEAS.</div></section><section class="panel editor"><div class="section-head"><h2>Your listing</h2><span class="tag" id="draftTag">AWAITING PRODUCT</span></div><div id="empty"><div class="empty-mark">✦</div><h3>A good story starts with your product.</h3><p>Add a photo or try the sample. Your editable listing will appear here.</p><div class="promise"><span>Editable descriptions</span><span>Your price, your choice</span><span>5 regional languages</span></div></div><section id="analysisPanel" class="analysis-panel" aria-label="AI suggestions" hidden><h3>Review AI suggestions</h3><p class="muted">Select supported fields to apply. Your price and seller-confirmed details stay under your control.</p><div id="suggestions"></div><button id="applyAnalysis" class="secondary" type="button">Apply selected suggestions</button><details><summary>Evidence, uncertainty and missing details</summary><div id="analysisDetails"></div><div id="intelligenceDetails"></div></details></section><form id="listing" hidden><div class="notice" id="listingNotice">Review every detail before using it.</div><label for="title">Product title</label><input id="title" maxlength="150" required><div class="row"><div><label for="material">Material <span>Confirm with seller</span></label><input id="material" placeholder="e.g. cotton, silk blend"></div><div><label for="condition">Condition</label><select id="condition"><option value="">Select condition</option><option>New</option><option>Pre-owned</option><option>Made to order</option></select></div></div><label for="description">Product description</label><textarea id="description" rows="4" maxlength="2000"></textarea><div class="price-box"><div><label for="price">Your selling price <span>Optional</span></label><div class="price-input"><span id="currencyLabel">INR</span><input id="price" type="number" min="0.01" max="10000000" step="0.01" placeholder="Enter your price"></div></div><p>Only you set the value.<br>We never estimate it from a photo.</p></div><label class="check"><input type="checkbox" id="includePrice"> Include my price in the ad</label><details class="analysis-panel"><summary>Optional pricing &amp; positioning</summary><section aria-label="Pricing assistance"><h3>Pricing & positioning</h3><p>Suggestions only. No live market feed is connected. Unknown market prices stay blank. Costs and seller-confirmed facts can support a cost-based recommendation.</p><label for="p_currency">Currency (set before entering a price; amounts are not converted)</label><select id="p_currency"><option>INR</option><option>USD</option><option>GBP</option><option>EUR</option></select><label for="p_market">Geographic market</label><input id="p_market" type="text" maxlength="200" value="India"><label for="p_location">Location / region</label><input id="p_location" type="text" maxlength="200"><label for="p_subcategory">Confirmed subcategory</label><input id="p_subcategory" type="text" maxlength="200"><label for="p_dimensions">Confirmed dimensions</label><input id="p_dimensions" type="text" maxlength="200"><label for="p_workmanship">Confirmed technique / workmanship</label><input id="p_workmanship" type="text" maxlength="200"><label for="p_accessories">Confirmed included accessories (or none)</label><input id="p_accessories" type="text" maxlength="200"><label for="p_seller_cost">Total cost per unit (including fees and fulfilment)</label><input id="p_seller_cost" type="number" min="0" step="0.01" max="10000000"><label for="p_seller_target_margin">Desired gross margin (%) — not markup</label><input id="p_seller_target_margin" type="number" min="0" step="0.01" max="99.99"><label for="p_sales_channel">Sales channel</label><input id="p_sales_channel" type="text" maxlength="200"><label for="p_target_customer">Target customer / use case</label><input id="p_target_customer" type="text" maxlength="200"><label class="check"><input id="p_use_ai" type="checkbox"> Ask Gemini for additional pricing factors and seller questions (sends these inputs)</label><button id="calculatePricing" class="secondary" type="button">Calculate pricing advice</button><div id="pricingContext"></div><div id="pricingResult" role="status">No estimate yet.</div><button id="acceptPricing" class="secondary" type="button">Accept into empty price field</button><button id="rejectPricing" class="text-button" type="button">Reject recommendation</button><label class="check"><input id="priceApproved" type="checkbox"> I approve my entered selling price and currency.</label><label for="positioning">Intended price positioning</label><select id="positioning"><option value="unclassified">Neutral / unclassified</option><option value="budget-friendly">Budget-friendly</option><option value="mid-range">Mid-range</option><option value="premium">Premium price point</option></select><p>Positioning needs comparable-price evidence; it does not prove quality or value. Marketing uses the seller-reviewed description. New captions below are English templates; regional ads remain available.</p><label for="originalPrice">Seller-provided genuine original price (optional)</label><input id="originalPrice" type="number" min="0.01" step="0.01"><label for="discountPercent">Proposed discount % (calculation only)</label><input id="discountPercent" type="number" min="0.01" max="99.99" step="0.01"><button id="generateMarketing" class="secondary" type="button">Generate reviewed-price marketing</button><pre id="marketingResult">Approve a price to generate captions and WhatsApp copy.</pre></section></details><label class="check"><input type="checkbox" id="confirmed"> I have reviewed the product details and price.</label><div class="editor-actions"><button type="button" class="secondary" id="export">Download catalog JSON</button> <button type="button" class="secondary" id="exportOndc">Download ONDC catalog (beta)</button><span>Integration draft · not an ONDC submission</span></div></form></section><section class="panel ad-panel"><div class="section-head"><h2>Your local voice</h2><span class="sound">▂ ▅ ▃ ▇ ▄</span></div><p class="muted">A familiar language goes a long way.</p><label for="language">Marketing language</label><select id="language"><option value="hi">हिन्दी · Hindi</option><option value="ta">தமிழ் · Tamil</option><option value="te">తెలుగు · Telugu</option><option value="kn">ಕನ್ನಡ · Kannada</option><option value="bn">বাংলা · Bengali</option></select><div class="ad-card"><span class="eyebrow">YOUR 15-SECOND PITCH</span><textarea id="ad" aria-label="Editable regional ad script" placeholder="Create a listing to generate your regional ad." rows="7" disabled></textarea><div class="ad-footer"><span id="priceStatus">Price stays in your hands</span><span>✦</span></div></div><h3 id="instagramHeading">Instagram post studio</h3><p class="muted">Use your reviewed listing and actual product photo. Edit, preview and approve before sharing.</p><p id="socialGenerationStatus" role="status"></p><button type="button" class="secondary wide" id="generateSocial">Generate Instagram &amp; sharing drafts</button><p id="draftSaveStatus" role="status">Draft saving initializes on this device.</p><button id="saveDraft" type="button" class="secondary">Save draft on this device</button><p class="muted">The current draft and photo are saved in this browser. Review again after restoring.</p><p id="instagramStatus" role="status">Instagram publishing setup required.</p><details><summary>Instagram connection &amp; setup</summary><div id="instagramSetupDetails"></div><button id="refreshInstagramStatus" class="secondary" type="button">Refresh connection status</button><p>Never enter an Instagram password here. Account authorization and publishing credentials belong on the backend.</p></details><p id="cloudStatus" role="status">Checking cloud configuration…</p><section id="socialPanel" aria-labelledby="instagramHeading" hidden><p id="socialSource"></p><p>Language: use the Ad language selector above. Changing it preserves your draft; regenerate when ready.</p><label class="check"><input id="socialIncludePrice" type="checkbox"> Include my approved selling price</label><label for="social_instagram_caption">Instagram caption</label><textarea id="social_instagram_caption" rows="3"></textarea><label for="social_hashtags">Hashtags (one per line)</label><textarea id="social_hashtags" rows="3"></textarea><label for="social_marketplace_description">Marketplace description</label><textarea id="social_marketplace_description" rows="3"></textarea><label for="social_whatsapp_message">WhatsApp message</label><textarea id="social_whatsapp_message" rows="3"></textarea><label for="social_voice_ad">Short voice ad</label><textarea id="social_voice_ad" rows="3"></textarea><label for="social_alternative_captions">Alternative captions (one per line)</label><textarea id="social_alternative_captions" rows="3"></textarea><p id="instagramCount" role="status"></p><details open><summary>Instagram preview</summary><strong>Your shop · Post preview</strong><img id="instagramPreviewPhoto" alt="Current product preview" hidden><p id="instagramPreviewCaption"></p></details><label class="check"><input id="socialApproved" type="checkbox"> I reviewed the marketing claims and translation.</label><button type="button" id="copyInstagram" class="secondary">Copy Instagram caption</button><button type="button" id="shareWhatsApp" class="secondary">Open WhatsApp draft</button><button type="button" id="downloadCreative" class="secondary">Download Creative (product photo)</button><label class="check"><input type="checkbox" id="instagramFinalApproval"> I approve this exact photo, caption, hashtags and any included price for Instagram.</label><button type="button" id="postInstagram" class="secondary">Post to Instagram</button><button type="button" id="downloadMarketing" class="secondary">Export Draft (JSON)</button><button type="button" id="useSocialVoice" class="secondary">Use voice script</button></section><button id="play" class="primary wide" disabled>▶ Play voice preview</button><div class="audio-actions"><button id="stop" class="text-button" disabled>Stop audio</button><button id="copy" class="text-button" disabled>Copy script</button></div><button type="button" id="sarvamPlay" class="secondary wide" disabled>▶ Generate Sarvam audio</button><audio id="sarvamAudio" controls hidden></audio><p class="audio-note">Device playback uses your browser's installed voices. Sarvam real-voice audio requires setup; status shown below is live, never assumed.</p><div class="voice-status" id="voiceStatus" role="status"></div><div class="powered"><span>INTEGRATION STATUS</span><b>Gemini backend · Device voice</b><small>Storage and BigQuery not configured</small></div></section></div><div class="toast" id="toast" role="status" hidden></div><footer><span>Dukaan-Scan AI</span><span>Made for the hands that make things.</span><span>PS 21 + PS 42 + PS 41</span></footer></main><script src="shared/pricing.js"></script><script src="app.js"></script><script src="pricing-ui.js"></script><script src="intelligence-ui.js"></script><script src="draft-storage.js"></script><script src="draft-persistence.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DukaanScan · Merchant Studio</title>
+<meta name="description" content="Turn product photos into editable catalog drafts and regional-language ads. You control the price.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23175A3C'/%3E%3Cpath d='M11 10h7q13 0 13 10T18 30h-7z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+<!-- SCREEN 1: language selection -->
+<section id="screen-language" class="screen" aria-label="Choose your language">
+  <div class="screen-inner narrow">
+    <div class="brand-mark"><span class="logo">D</span>DukaanScan</div>
+    <h1 data-i18n="chooseLanguage">Choose your language</h1>
+    <p class="muted" data-i18n="languageHelp">You can change this anytime from the home screen.</p>
+    <div class="lang-grid" id="langGrid" role="list"></div>
+    <button type="button" id="skipLanguage" class="text-button wide" data-i18n="skip">Skip for now</button>
+    <p class="translation-notice" id="translationNotice" data-i18n="translationNotice"></p>
+  </div>
+</section>
+
+<!-- SCREEN 2: home / add product -->
+<section id="screen-home" class="screen" hidden>
+  <header class="app-header">
+    <div class="brand-mark"><span class="logo">D</span>DukaanScan</div>
+    <div class="header-actions">
+      <button type="button" id="speakGuidanceBtn" class="icon-button" data-i18n-aria="speakGuidance" aria-label="Hear instructions">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z" fill="currentColor"/><path d="M16 8a5 5 0 0 1 0 8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      </button>
+      <button type="button" id="openLanguagePicker" class="icon-button" data-i18n-aria="changeLanguage" aria-label="Change language">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+      </button>
+      <button type="button" id="openSettings" class="icon-button" data-i18n-aria="settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-1.7-1l-.4-2.4h-4l-.4 2.4a7.6 7.6 0 0 0-1.7 1l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4 2.3-.9a7.6 7.6 0 0 0 1.7 1l.4 2.4h4l.4-2.4a7.6 7.6 0 0 0 1.7-1l2.3.9 2-3.4-2-1.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="screen-inner">
+    <h2 data-i18n="homeTitle">Add your product</h2>
+    <p class="muted" data-i18n="homeHelp">Take a clear photo of one product to get started.</p>
+
+    <input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+    <input id="fileCamera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
+
+    <div class="action-cards">
+      <button type="button" id="cameraCard" class="action-card">
+        <span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="32" height="32"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" stroke="currentColor" stroke-width="1.8" fill="none"/></svg></span>
+        <strong data-i18n="camera">Camera</strong>
+        <span class="muted small" data-i18n="cameraHelp">Take a new photo</span>
+      </button>
+      <button type="button" id="galleryCard" class="action-card">
+        <span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="32" height="32"><rect x="3.5" y="4.5" width="17" height="15" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="8.5" cy="9.5" r="1.6" fill="currentColor"/><path d="M5 16.5l4.5-4.5 3 3 3.5-4 4 5.5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg></span>
+        <strong data-i18n="gallery">Gallery</strong>
+        <span class="muted small" data-i18n="galleryHelp">Choose from your photos</span>
+      </button>
+    </div>
+
+    <button class="drop" id="drop">
+      <span id="uploadIcon" class="upload-icon">＋</span>
+      <img id="preview" alt="Your uploaded product" hidden>
+      <strong id="uploadLabel">Drop your product photo here</strong>
+      <span id="uploadHelp">or click to browse · JPG, PNG, WebP · up to 10 MB</span>
+    </button>
+    <p class="privacy">Sample mode keeps photos in this browser. AI analysis sends your photo and notes to the configured Google service; this app does not store them.</p>
+
+    <label for="category" data-i18n="category">Category</label>
+    <select id="category">
+      <option value="saree">Saree &amp; textiles</option>
+      <option value="pot">Pottery &amp; homeware</option>
+      <option value="jewelry">Jewellery &amp; accessories</option>
+      <option value="other">Other handmade products</option>
+    </select>
+    <label for="notes"><span data-i18n="notes">Notes (optional)</span></label>
+    <textarea id="notes" maxlength="4000" rows="2" data-i18n-placeholder="notesHelp" placeholder="Known facts, label text or details to check"></textarea>
+
+    <button class="primary wide" id="generate" data-i18n="analyzeButton">Analyze my product</button>
+    <p id="aiStatus" class="service-status" role="status">Checking AI configuration…</p>
+    <button class="secondary wide" id="fallback" type="button">Use category sample draft</button>
+    <button class="text-button wide" id="sample" data-i18n="useSample">Try a sample product instead</button>
+    <div class="note">
+      <b>A little honesty, by design.</b>
+      <p>AI suggestions need your review. Evidence describes what the image or your notes support; it does not verify authenticity. Sample drafts remain available without AI.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 3: analyzing -->
+<section id="screen-analyzing" class="screen" hidden>
+  <div class="screen-inner narrow center">
+    <img id="analyzingPreview" class="analyzing-preview" alt="" hidden>
+    <div class="spinner" aria-hidden="true"></div>
+    <h2 data-i18n="analyzingTitle">Analyzing your product…</h2>
+    <p class="muted" data-i18n="analyzingHelp">This usually takes a few seconds.</p>
+    <div id="analyzeErrorBox" class="notice" role="alert" hidden>
+      <p id="analyzeErrorText"></p>
+      <button type="button" id="analyzeRetry" class="secondary" data-i18n="retry">Try again</button>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 4: product report -->
+<section id="screen-report" class="screen" hidden>
+  <header class="app-header"><button type="button" class="icon-button back-button" id="backFromReport" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2 data-i18n="reportTitle">Your product report</h2><span class="tag" id="draftTag">AWAITING PRODUCT</span></header>
+  <div class="screen-inner">
+    <p class="muted" data-i18n="reportHelp">Review the details below. You can edit anything.</p>
+    <div class="panel editor">
+      <div id="empty">
+        <div class="empty-mark">✦</div>
+        <h3>A good story starts with your product.</h3>
+        <p>Add a photo or try the sample. Your editable listing will appear here.</p>
+        <div class="promise">
+          <span>Editable descriptions</span>
+          <span>Your price, your choice</span>
+          <span>5 regional languages</span>
+        </div>
+      </div>
+      <section id="analysisPanel" class="analysis-panel" aria-label="AI suggestions" hidden>
+        <h3>Review AI suggestions</h3>
+        <p class="muted">Select supported fields to apply. Your price and seller-confirmed details stay under your control.</p>
+        <div id="suggestions"></div>
+        <button id="applyAnalysis" class="secondary" type="button">Apply selected suggestions</button>
+        <details>
+          <summary>Evidence, uncertainty and missing details</summary>
+          <div id="analysisDetails"></div>
+          <div id="intelligenceDetails"></div>
+        </details>
+      </section>
+      <form id="listing" hidden>
+        <div class="notice" id="listingNotice">Review every detail before using it.</div>
+        <label for="title">Product title</label>
+        <input id="title" maxlength="150" required>
+        <div class="row">
+          <div>
+            <label for="material">Material <span>Confirm with seller</span></label>
+            <input id="material" placeholder="e.g. cotton, silk blend">
+          </div>
+          <div>
+            <label for="condition">Condition</label>
+            <select id="condition">
+              <option value="">Select condition</option>
+              <option>New</option>
+              <option>Pre-owned</option>
+              <option>Made to order</option>
+            </select>
+          </div>
+        </div>
+        <label for="description">Product description</label>
+        <textarea id="description" rows="4" maxlength="2000"></textarea>
+        <button type="button" id="reportListen" class="secondary wide" disabled>
+          <span data-i18n="listenReport">Listen to this report</span>
+        </button>
+        <p id="reportListenStatus" class="voice-status" role="status"></p>
+        <audio id="reportAudio" controls hidden></audio>
+        <div class="price-box">
+          <div>
+            <label for="price"><span data-i18n="price">Price</span> <span>Optional</span></label>
+            <div class="price-input">
+              <span id="currencyLabel">INR</span>
+              <input id="price" type="number" min="0.01" max="10000000" step="0.01" data-i18n-placeholder="addPrice" placeholder="Enter your price">
+            </div>
+          </div>
+          <p>Only you set the value.<br>We never estimate it from a photo.</p>
+        </div>
+        <label class="check"><input type="checkbox" id="includePrice"> Include my price in the ad</label>
+        <details class="analysis-panel">
+          <summary data-i18n="editDetails">Edit details</summary>
+          <section aria-label="Pricing assistance">
+            <h3>Pricing &amp; positioning</h3>
+            <p>Suggestions only. No live market feed is connected. Unknown market prices stay blank. Costs and seller-confirmed facts can support a cost-based recommendation.</p>
+            <label for="p_currency">Currency (set before entering a price; amounts are not converted)</label>
+            <select id="p_currency"><option>INR</option><option>USD</option><option>GBP</option><option>EUR</option></select>
+            <label for="p_market">Geographic market</label>
+            <input id="p_market" type="text" maxlength="200" value="India">
+            <label for="p_location">Location / region</label>
+            <input id="p_location" type="text" maxlength="200">
+            <label for="p_subcategory">Confirmed subcategory</label>
+            <input id="p_subcategory" type="text" maxlength="200">
+            <label for="p_dimensions">Confirmed dimensions</label>
+            <input id="p_dimensions" type="text" maxlength="200">
+            <label for="p_workmanship">Confirmed technique / workmanship</label>
+            <input id="p_workmanship" type="text" maxlength="200">
+            <label for="p_accessories">Confirmed included accessories (or none)</label>
+            <input id="p_accessories" type="text" maxlength="200">
+            <label for="p_seller_cost">Total cost per unit (including fees and fulfilment)</label>
+            <input id="p_seller_cost" type="number" min="0" step="0.01" max="10000000">
+            <label for="p_seller_target_margin">Desired gross margin (%) — not markup</label>
+            <input id="p_seller_target_margin" type="number" min="0" step="0.01" max="99.99">
+            <label for="p_sales_channel">Sales channel</label>
+            <input id="p_sales_channel" type="text" maxlength="200">
+            <label for="p_target_customer">Target customer / use case</label>
+            <input id="p_target_customer" type="text" maxlength="200">
+            <label class="check"><input id="p_use_ai" type="checkbox"> Ask Gemini for additional pricing factors and seller questions (sends these inputs)</label>
+            <button id="calculatePricing" class="secondary" type="button">Calculate pricing advice</button>
+            <div id="pricingContext"></div>
+            <div id="pricingResult" role="status">No estimate yet.</div>
+            <button id="acceptPricing" class="secondary" type="button">Accept into empty price field</button>
+            <button id="rejectPricing" class="text-button" type="button">Reject recommendation</button>
+            <label class="check"><input id="priceApproved" type="checkbox"> I approve my entered selling price and currency.</label>
+            <label for="positioning">Intended price positioning</label>
+            <select id="positioning">
+              <option value="unclassified">Neutral / unclassified</option>
+              <option value="budget-friendly">Budget-friendly</option>
+              <option value="mid-range">Mid-range</option>
+              <option value="premium">Premium price point</option>
+            </select>
+            <p>Positioning needs comparable-price evidence; it does not prove quality or value. Marketing uses the seller-reviewed description. New captions below are English templates; regional ads remain available.</p>
+            <label for="originalPrice">Seller-provided genuine original price (optional)</label>
+            <input id="originalPrice" type="number" min="0.01" step="0.01">
+            <label for="discountPercent">Proposed discount % (calculation only)</label>
+            <input id="discountPercent" type="number" min="0.01" max="99.99" step="0.01">
+            <button id="generateMarketing" class="secondary" type="button">Generate reviewed-price marketing</button>
+            <pre id="marketingResult">Approve a price to generate captions and WhatsApp copy.</pre>
+          </section>
+        </details>
+        <label class="check"><input type="checkbox" id="confirmed"> I have reviewed the product details and price.</label>
+      </form>
+    </div>
+    <button type="button" id="reportContinue" class="primary wide" data-i18n="continueToSell">Continue</button>
+  </div>
+</section>
+
+<!-- SCREEN 5: choose destination -->
+<section id="screen-destinations" class="screen" hidden>
+  <header class="app-header"><button type="button" class="icon-button back-button" id="backFromDestinations" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></header>
+  <div class="screen-inner narrow center">
+    <h2 data-i18n="destinationTitle">Where do you want to sell?</h2>
+    <p class="muted" data-i18n="destinationHelp">Choose how you want to reach customers.</p>
+    <div class="destination-cards">
+      <button type="button" id="gotoInstagram" class="destination-card">
+        <span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="32" height="32"><rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="17" cy="7" r="1" fill="currentColor"/></svg></span>
+        <strong data-i18n="instagram">Instagram</strong>
+        <span class="muted small" data-i18n="instagramHelp">Post to your Instagram page</span>
+      </button>
+      <button type="button" id="gotoOndc" class="destination-card">
+        <span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="32" height="32"><path d="M4 7l8-3.5L20 7v10l-8 3.5L4 17V7Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M4 7l8 3.5L20 7M12 10.5V21" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg></span>
+        <strong data-i18n="ondc">ONDC Catalogue</strong>
+        <span class="muted small" data-i18n="ondcHelp">Export a catalogue listing</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 6: Instagram + voice ad -->
+<section id="screen-instagram" class="screen" hidden>
+  <header class="app-header"><button type="button" class="icon-button back-button" id="backFromInstagram" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2 data-i18n="instagram">Instagram</h2></header>
+  <div class="screen-inner">
+    <section class="panel ad-panel">
+      <div class="section-head"><h2>Your local voice</h2><span class="sound">▂ ▅ ▃ ▇ ▄</span></div>
+      <p class="muted">A familiar language goes a long way.</p>
+      <label for="language">Marketing language</label>
+      <select id="language">
+        <option value="hi">हिन्दी · Hindi</option>
+        <option value="ta">தமிழ் · Tamil</option>
+        <option value="te">తెలుగు · Telugu</option>
+        <option value="kn">ಕನ್ನಡ · Kannada</option>
+        <option value="bn">বাংলা · Bengali</option>
+      </select>
+      <div class="ad-card">
+        <span class="eyebrow">YOUR 15-SECOND PITCH</span>
+        <textarea id="ad" aria-label="Editable regional ad script" placeholder="Create a listing to generate your regional ad." rows="7" disabled></textarea>
+        <div class="ad-footer"><span id="priceStatus">Price stays in your hands</span><span>✦</span></div>
+      </div>
+      <h3 id="instagramHeading">Instagram post studio</h3>
+      <p class="muted">Use your reviewed listing and actual product photo. Edit, preview and approve before sharing.</p>
+      <p id="socialGenerationStatus" role="status"></p>
+      <button type="button" class="secondary wide" id="generateSocial">Generate Instagram &amp; sharing drafts</button>
+      <p id="draftSaveStatus" role="status">Draft saving initializes on this device.</p>
+      <button id="saveDraft" type="button" class="secondary">Save draft on this device</button>
+      <p class="muted">The current draft and photo are saved in this browser. Review again after restoring.</p>
+      <p id="instagramStatus" role="status">Instagram publishing setup required.</p>
+      <details>
+        <summary>Instagram connection &amp; setup</summary>
+        <div id="instagramSetupDetails"></div>
+        <button id="refreshInstagramStatus" class="secondary" type="button">Refresh connection status</button>
+        <p>Never enter an Instagram password here. Account authorization and publishing credentials belong on the backend.</p>
+      </details>
+      <p id="cloudStatus" role="status">Checking cloud configuration…</p>
+      <section id="socialPanel" aria-labelledby="instagramHeading" hidden>
+        <p id="socialSource"></p>
+        <p>Language: use the Ad language selector above. Changing it preserves your draft; regenerate when ready.</p>
+        <label class="check"><input id="socialIncludePrice" type="checkbox"> Include my approved selling price</label>
+        <label for="social_instagram_caption">Instagram caption</label>
+        <textarea id="social_instagram_caption" rows="3"></textarea>
+        <label for="social_hashtags">Hashtags (one per line)</label>
+        <textarea id="social_hashtags" rows="3"></textarea>
+        <label for="social_marketplace_description">Marketplace description</label>
+        <textarea id="social_marketplace_description" rows="3"></textarea>
+        <label for="social_whatsapp_message">WhatsApp message</label>
+        <textarea id="social_whatsapp_message" rows="3"></textarea>
+        <label for="social_voice_ad">Short voice ad</label>
+        <textarea id="social_voice_ad" rows="3"></textarea>
+        <label for="social_alternative_captions">Alternative captions (one per line)</label>
+        <textarea id="social_alternative_captions" rows="3"></textarea>
+        <p id="instagramCount" role="status"></p>
+        <details open>
+          <summary>Instagram preview</summary>
+          <strong>Your shop · Post preview</strong>
+          <img id="instagramPreviewPhoto" alt="Current product preview" hidden>
+          <p id="instagramPreviewCaption"></p>
+        </details>
+        <label class="check"><input id="socialApproved" type="checkbox"> I reviewed the marketing claims and translation.</label>
+        <button type="button" id="copyInstagram" class="secondary">Copy Instagram caption</button>
+        <button type="button" id="shareWhatsApp" class="secondary">Open WhatsApp draft</button>
+        <button type="button" id="downloadCreative" class="secondary">Download Creative (product photo)</button>
+        <label class="check"><input type="checkbox" id="instagramFinalApproval"> I approve this exact photo, caption, hashtags and any included price for Instagram.</label>
+        <button type="button" id="postInstagram" class="secondary" data-i18n="publish">Publish</button>
+        <button type="button" id="downloadMarketing" class="secondary">Export Draft (JSON)</button>
+        <button type="button" id="useSocialVoice" class="secondary">Use voice script</button>
+      </section>
+      <button id="play" class="primary wide" disabled>▶ Play voice preview</button>
+      <div class="audio-actions"><button id="stop" class="text-button" disabled>Stop audio</button><button id="copy" class="text-button" disabled>Copy script</button></div>
+      <button type="button" id="sarvamPlay" class="secondary wide" disabled>▶ <span data-i18n="generateAudio">Generate voice ad</span></button>
+      <audio id="sarvamAudio" controls hidden></audio>
+      <p class="audio-note">Device playback uses your browser's installed voices. Sarvam real-voice audio requires setup; status shown below is live, never assumed.</p>
+      <div class="voice-status" id="voiceStatus" role="status"></div>
+      <div class="powered"><span>INTEGRATION STATUS</span><b>Gemini backend · Device voice</b><small>Storage and BigQuery not configured</small></div>
+    </section>
+  </div>
+</section>
+
+<!-- SCREEN 7: ONDC catalogue -->
+<section id="screen-ondc" class="screen" hidden>
+  <header class="app-header"><button type="button" class="icon-button back-button" id="backFromOndc" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2 data-i18n="ondc">ONDC Catalogue</h2></header>
+  <div class="screen-inner">
+    <div class="panel" id="ondcSummaryCard">
+      <h3 id="ondcSummaryTitle"></h3>
+      <p id="ondcSummaryDescription" class="muted"></p>
+      <ul id="ondcSummaryList" class="summary-list"></ul>
+    </div>
+    <div class="notice" id="ondcMissingBox" role="status">
+      <strong data-i18n="missingFields">Missing or incomplete</strong>
+      <ul id="ondcMissingList"></ul>
+    </div>
+    <div class="editor-actions">
+      <button type="button" class="secondary" id="export">Download catalog JSON</button>
+      <button type="button" class="primary" id="exportOndc" data-i18n="downloadCatalogue">Download ONDC catalog (beta)</button>
+      <span>Integration draft · not an ONDC submission</span>
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<footer>
+  <span>Dukaan-Scan AI</span>
+  <span>Made for the hands that make things.</span>
+  <span>PS 21 + PS 42 + PS 41</span>
+</footer>
+<script src="i18n.js"></script>
+<script src="shared/pricing.js"></script>
+<script src="app.js"></script>
+<script src="pricing-ui.js"></script>
+<script src="intelligence-ui.js"></script>
+<script src="draft-storage.js"></script>
+<script src="draft-persistence.js"></script>
+<script src="screens.js"></script>
+</body>
+</html>

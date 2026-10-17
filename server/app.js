@@ -104,7 +104,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
     try {res.json(await marketProduct(input));} catch(error){next(error);} finally{active--;}
   });
   app.get('/shared/pricing.js', (req,res) => res.sendFile(root + 'shared/pricing.js'));
-  for (const file of ['index.html', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css']) app.get(file === 'index.html' ? ['/', '/index.html'] : `/${file}`, (req, res) => res.sendFile(root + file));
+  for (const file of ['index.html', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css', 'i18n.js', 'screens.js']) app.get(file === 'index.html' ? ['/', '/index.html'] : `/${file}`, (req, res) => res.sendFile(root + file));
   app.use((req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Not found.' } }));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
