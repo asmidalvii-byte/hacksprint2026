@@ -12,13 +12,14 @@ import { AppError } from './errors.js';
 import { createAnalyzer } from './gemini.js';
 import { createMarketing } from './marketing.js';
 import { createPricing } from './pricing.js';
+import { createVoiceSynth } from './sarvam.js';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export function createApp({ config, analyze = createAnalyzer(config), priceProduct = createPricing(config), marketProduct = createMarketing(config) }) {
+export function createApp({ config, analyze = createAnalyzer(config), priceProduct = createPricing(config), marketProduct = createMarketing(config), synthesizeVoice = createVoiceSynth(config) }) {
   const app = express();
   app.disable('x-powered-by');
   app.use((req, res, next) => {
     res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" });
+      'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" });
     next();
   });
   app.get('/api/integrations', (req,res)=>res.json(integrationStatus()));
@@ -85,6 +86,15 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
     if(req.body?.approved!==true)return res.status(400).json({error:{code:'REVIEW_REQUIRED',message:'Explicitly approve the final image and text first.'}});
     return res.status(503).json({error:{code:'INSTAGRAM_SETUP_REQUIRED',message:integrationStatus().instagram.message}});
   });
+  app.post('/api/voice-ad', limiter, express.json({limit:'8kb'}), async (req,res,next) => {
+    const input = req.body;
+    if (!input || Array.isArray(input) || Object.keys(input).some(k => !['text','language','reviewed'].includes(k)) || input.reviewed !== true || typeof input.text !== 'string' || !input.text.trim() || input.text.length > 2500 || !['hi','ta','te','kn','bn'].includes(input.language)) return res.status(400).json({ error: { message: 'Review the ad script and choose a supported language first.' } });
+    if (!config.sarvamConfigured) return res.status(503).json({ error: { code: 'SARVAM_SETUP_REQUIRED', message: integrationStatus().sarvam.message } });
+    if (active >= 2) return res.status(503).json({ error: { message: 'Service busy. Try again.' } });
+    active++;
+    try { const result = await synthesizeVoice(input); res.json({ audio: result.audio, format: result.format, model: result.model, provider: 'sarvam', generatedAt: result.generatedAt }); }
+    catch (error) { next(error); } finally { active--; }
+  });
   app.post('/api/marketing', limiter, express.json({limit:'16kb'}), async (req,res,next) => {
     const input=req.body;
     if(!input || Array.isArray(input) || Object.keys(input).some(k=>!['title','description','language','reviewed'].includes(k)) || input.reviewed!==true || typeof input.title!=='string' || !input.title.trim() || input.title.length>150 || typeof input.description!=='string' || input.description.length>2000 || !['en','hi','ta','te','kn','bn'].includes(input.language)) return res.status(400).json({error:{message:'Review the listing and choose a supported language first.'}});
@@ -94,7 +104,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
     try {res.json(await marketProduct(input));} catch(error){next(error);} finally{active--;}
   });
   app.get('/shared/pricing.js', (req,res) => res.sendFile(root + 'shared/pricing.js'));
-  for (const file of ['index.html', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css']) app.get(file === 'index.html' ? ['/', '/index.html'] : `/${file}`, (req, res) => res.sendFile(root + file));
+  for (const file of ['index.html', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css', 'i18n.js', 'screens.js']) app.get(file === 'index.html' ? ['/', '/index.html'] : `/${file}`, (req, res) => res.sendFile(root + file));
   app.use((req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Not found.' } }));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);

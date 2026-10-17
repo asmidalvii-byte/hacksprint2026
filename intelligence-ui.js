@@ -56,7 +56,7 @@ async function refreshIntegrationStatus(){
  const labels={INSTAGRAM_ACCOUNT_ID:'Instagram professional account ID',INSTAGRAM_ACCESS_TOKEN:'Authorized Instagram access token',INSTAGRAM_API_VERSION:'Supported Meta API version'};
  const lines=[...status.instagram.missing.map(k=>'Missing: '+(labels[k]||k)), 'Required: a Business or Creator account, Meta app authorization and content-publishing permissions.', 'Remaining implementation: authorized media hosting and an official publishing adapter with confirmed publication responses.', 'Configuration presence alone does not prove account access or publishing permission.'];
  $('instagramSetupDetails').replaceChildren(...lines.map(line=>textElement('p',line)));
- $('cloudStatus').textContent=`Gemini route: ${status.gemini.provider}. Cloud Storage: ${status.storage.state}. BigQuery: ${status.bigquery.state}. Vertex AI: ${status.vertex.state}.`;
+ $('cloudStatus').textContent=`Gemini route: ${status.gemini.provider}. Cloud Storage: ${status.storage.state}. BigQuery: ${status.bigquery.state}. Vertex AI: ${status.vertex.state}. Sarvam voice: ${status.sarvam?.state||'setup_required'}.`;
  }catch{$('instagramStatus').textContent='Connection status unavailable. Draft editing, downloads and exports remain available.';}finally{$('refreshInstagramStatus').disabled=false}
 }
 $('refreshInstagramStatus').onclick=refreshIntegrationStatus;
