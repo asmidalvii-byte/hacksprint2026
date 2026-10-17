@@ -1,7 +1,11 @@
-function registrationError(error){
+function registrationError(error,action='Registration'){
  const messages={
- email_address_not_authorized:'Supabase cannot send confirmation email to this address with its default email service. The project owner must configure custom SMTP, or use an authorized project-team email for testing.',
- over_email_send_rate_limit:'The confirmation-email limit has been reached. Wait before retrying; the project owner can configure custom SMTP for more capacity.',
+ invalid_credentials:'The email or password is incorrect. If registration never completed, create an account first.',
+ email_not_confirmed:'Confirm your email before signing in. Check your inbox and spam folder for the confirmation link.',
+ user_banned:'This account is restricted. Contact the project owner.',
+ session_expired:'Your session expired. Sign in again.',
+ email_address_not_authorized:'Supabase cannot send account email to this address with its default email service. The project owner must configure custom SMTP, or use an authorized project-team email for testing.',
+ over_email_send_rate_limit:'The account-email limit has been reached. Wait before retrying; the project owner can configure custom SMTP for more capacity.',
  over_request_rate_limit:'Too many registration attempts. Wait before trying again.',
  weak_password:'The password does not meet this project’s security requirements. Use a longer password with uppercase, lowercase, numbers and symbols.',
  email_address_invalid:'Enter a valid email address.',
@@ -16,7 +20,7 @@ function registrationError(error){
  if(error?.status===429)return 'Too many requests or confirmation emails. Wait before retrying.';
  if(error?.name==='AuthRetryableFetchError'||error instanceof TypeError)return 'Could not reach the account service. Check your connection and try again.';
  const code=typeof error?.code==='string'&&/^[a-z_]{1,64}$/.test(error.code)?error.code:'unknown';
- return 'Registration could not complete (code: '+code+'). Share this code, not your password, so setup can be checked.';
+ return action+' could not complete (code: '+code+'). Share this code, not your password, so setup can be checked.';
 }
 /* Supabase public client. Seller API requests are independently authenticated server-side. */
 window.KritiAccount={configured:false,user:null,client:null};
@@ -32,7 +36,15 @@ window.KritiAccount.ready=(async()=>{
   const apply=session=>{account.user=session?.user||null;document.getElementById('workspace').hidden=!account.user;document.getElementById('account_form').hidden=Boolean(account.user);document.getElementById('account_logout').hidden=!account.user;document.getElementById('account_products').hidden=!account.user;message.textContent=account.user?'Signed in as '+account.user.email:'Sign in to save your products securely.'};
   const {data:{session},error}=await account.client.auth.getSession();if(error)throw error;apply(session);
   account.client.auth.onAuthStateChange((event,session)=>{if(event==='PASSWORD_RECOVERY'){document.getElementById('account_new_password').hidden=false;document.getElementById('workspace').hidden=true;return}if(event==='SIGNED_OUT'){location.reload();return}if(session?.user.id!==account.user?.id&&event==='SIGNED_IN'){location.reload();return}apply(session)});
-  document.getElementById('account_form').onsubmit=async e=>{e.preventDefault();const button=document.getElementById('account_login');button.disabled=true;try{const {error}=await account.client.auth.signInWithPassword({email:document.getElementById('account_email').value,password:document.getElementById('account_password').value});message.textContent=error?'Sign-in failed. Check your details and email confirmation.':'Signed in.'}finally{button.disabled=false}};
+  let signingIn=false,resetting=false;
+  document.getElementById('account_form').onsubmit=async e=>{
+   e.preventDefault();if(signingIn)return;
+   const email=document.getElementById('account_email'),password=document.getElementById('account_password'),button=document.getElementById('account_login');
+   email.value=email.value.trim();if(!email.reportValidity()||!password.reportValidity())return;
+   signingIn=true;button.disabled=true;message.textContent='Signing in…';
+   try{const {error}=await account.client.auth.signInWithPassword({email:email.value,password:password.value});message.textContent=error?registrationError(error,'Sign-in'):'Signed in.'}
+   catch(error){message.textContent=registrationError(error,'Sign-in')}finally{signingIn=false;button.disabled=false}
+  };
   let registering=false;
   document.getElementById('account_register').onclick=async()=>{
    if(registering)return;
@@ -42,7 +54,14 @@ window.KritiAccount.ready=(async()=>{
    try{const {data,error}=await account.client.auth.signUp({email:email.value,password:password.value,options:{emailRedirectTo:location.origin}});message.textContent=error?registrationError(error):data?.session?'Signed in.': 'Registration request accepted. Check your email to confirm; if you already registered, sign in or reset your password.'}
    catch(error){message.textContent=registrationError(error)}finally{registering=false;button.disabled=false}
   };
-  document.getElementById('account_reset').onclick=async()=>{const {error}=await account.client.auth.resetPasswordForEmail(document.getElementById('account_email').value,{redirectTo:location.origin});message.textContent=error?'Could not request password reset. Try again.':'If the account exists, a password-reset email will arrive.'};
+  document.getElementById('account_reset').onclick=async()=>{
+   if(resetting)return;
+   const email=document.getElementById('account_email'),button=document.getElementById('account_reset');
+   email.value=email.value.trim();if(!email.reportValidity())return;
+   resetting=true;button.disabled=true;message.textContent='Requesting password reset…';
+   try{const {error}=await account.client.auth.resetPasswordForEmail(email.value,{redirectTo:location.origin});message.textContent=error?registrationError(error,'Password reset'):'Reset request accepted. If the account is eligible, check your inbox and spam folder for the reset email.'}
+   catch(error){message.textContent=registrationError(error,'Password reset')}finally{resetting=false;button.disabled=false}
+  };
   document.getElementById('account_new_password').onsubmit=async e=>{e.preventDefault();const {error}=await account.client.auth.updateUser({password:document.getElementById('account_replacement').value});message.textContent=error?'Password update failed. Request a new reset email.':'Password updated.';if(!error)location.reload()};
   document.getElementById('account_logout').onclick=async()=>{await saveDraft();const {error}=await account.client.auth.signOut();if(error)message.textContent='Sign-out failed. Try again.'};
   document.getElementById('account_refresh').onclick=account.listProducts;
