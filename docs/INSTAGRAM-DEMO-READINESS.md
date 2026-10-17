@@ -1,5 +1,7 @@
 # Instagram workflow and demo readiness
 
+Historical frontend report. The newer backend implementation, setup blockers and frontend handoff are documented in [INSTAGRAM-BACKEND.md](INSTAGRAM-BACKEND.md). Real Meta authorization/publishing remain unverified.
+
 Updated 2026-10-17. Starting commit: 7080ff9. Existing analysis, textile, pricing, marketing generation and IndexedDB storage were reused. No new dependency or paid Gemini call was needed.
 
 ## Implemented changes

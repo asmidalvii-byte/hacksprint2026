@@ -1,5 +1,6 @@
 import {installSellers, sellerConfig} from './sellers.js';
 import { integrationStatus } from './integrations.js';
+import {createInstagram} from './instagram.js';
 import express from 'express';
 import multer from 'multer';
 import rateLimit from 'express-rate-limit';
@@ -15,7 +16,7 @@ import { createMarketing } from './marketing.js';
 import { createPricing } from './pricing.js';
 import { createVoiceSynth } from './sarvam.js';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export function createApp({ config, analyze = createAnalyzer(config), priceProduct = createPricing(config), marketProduct = createMarketing(config), synthesizeVoice = createVoiceSynth(config), accounts = sellerConfig(), sellerClientFactory }) {
+export function createApp({ config, analyze = createAnalyzer(config), priceProduct = createPricing(config), marketProduct = createMarketing(config), synthesizeVoice = createVoiceSynth(config), accounts = sellerConfig(), sellerClientFactory, instagram = createInstagram() }) {
   const app = express();
   app.disable('x-powered-by');
   app.use((req, res, next) => {
@@ -23,6 +24,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
       'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' data:; connect-src 'self' ${accounts.configured?new URL(accounts.url).origin:''}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'` });
     next();
   });
+  instagram.installCallback(app);
   app.get('/api/integrations', (req,res)=>res.json(integrationStatus()));
   app.get('/api/status', (req, res) => res.json({ aiEnabled: config.enabled, configured: config.configured, provider: config.provider, requestTimeoutMs: config.timeoutMs + 10000, verification: 'not_verified_by_status_endpoint', storage: 'not_configured', analytics: 'not_configured' }));
   app.use('/api', (req, res, next) => {
@@ -36,6 +38,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
     next();
   });
   installSellers(app,{settings:accounts,clientFactory:sellerClientFactory});
+  instagram.installRoutes(app);
   const limiter = rateLimit({ windowMs: 60000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false,
     message: { error: { code: 'RATE_LIMITED', message: 'Too many requests. Wait a minute or use a sample draft.' } } });
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.maxUploadBytes, files: 1, fields: 2, fieldSize: 10000, parts: 3 } });
@@ -83,10 +86,6 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
     if (active >= 2) return res.status(503).json({error:{message:'Service busy. Try again.'}});
     active++;
     try { res.json(await priceProduct(input)); } catch(error) { next(error); } finally { active--; }
-  });
-  app.post('/api/instagram/publish', limiter, express.json({limit:'1kb'}), (req,res)=>{
-    if(req.body?.approved!==true)return res.status(400).json({error:{code:'REVIEW_REQUIRED',message:'Explicitly approve the final image and text first.'}});
-    return res.status(503).json({error:{code:'INSTAGRAM_SETUP_REQUIRED',message:integrationStatus().instagram.message}});
   });
   app.post('/api/voice-ad', limiter, express.json({limit:'8kb'}), async (req,res,next) => {
     const input = req.body;
