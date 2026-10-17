@@ -106,7 +106,10 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
   });
   app.get('/vendor/supabase.js',(req,res)=>res.sendFile(root+'node_modules/@supabase/supabase-js/dist/umd/supabase.js'));
   app.get('/shared/pricing.js', (req,res) => res.sendFile(root + 'shared/pricing.js'));
-  for (const file of ['index.html', 'kriti-ui.css', 'kriti-i18n.js', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'account-ui.js', 'workflow-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css', 'i18n.js', 'screens.js']) app.get(file === 'index.html' ? ['/', '/index.html'] : `/${file}`, (req, res) => res.sendFile(root + file));
+  app.get(['/', '/welcome'],(req,res)=>res.sendFile(root+'landing.html'));
+  app.get('/assets/kriti-logo.jpeg',(req,res)=>res.sendFile(root+'assets/logo/kriti-logo.jpeg'));
+  for(const file of ['landing.js','landing.css'])app.get('/landing/'+file,(req,res)=>res.sendFile(root+'public/landing/'+file));
+  for (const file of ['index.html', 'kriti-ui.css', 'kriti-i18n.js', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'account-ui.js', 'workflow-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css', 'i18n.js', 'screens.js']) app.get(`/${file}`, (req, res) => res.sendFile(root + file));
   app.use((req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Not found.' } }));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
