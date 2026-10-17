@@ -3,14 +3,15 @@ let currentFile=null, productVersion=0, requestSequence=0, uploadSequence=0, ana
 const samples={saree:['Saree for everyday celebrations','A saree to style for everyday moments and special occasions. Confirm the fabric, dimensions, care instructions and available colours with the seller.'],pot:['Decorative pottery for your home','Bring a personal touch to your space with this pottery piece. Confirm the material, dimensions, finish and intended use with the seller.'],jewelry:['An accessory for your everyday style','Complete your look with this accessory. Confirm the material, measurements, finish and care instructions with the seller.'],other:['A special find from your local shop','Discover a product from your local merchant. Confirm the material, dimensions, condition and care instructions before ordering.']};
 const words={hi:['अपने पसंदीदा स्थानीय दुकानदार से कुछ खास खरीदें।','जानकारी और ऑर्डर के लिए हमसे संपर्क करें।','कीमत','रुपये'],ta:['உங்கள் உள்ளூர் கடையில் சிறப்பான பொருளை வாங்குங்கள்.','விவரங்களுக்கும் ஆர்டர் செய்யவும் எங்களைத் தொடர்பு கொள்ளுங்கள்.','விலை','ரூபாய்'],te:['మీ స్థానిక దుకాణంలో ప్రత్యేకమైన వస్తువును కొనండి.','వివరాలు మరియు ఆర్డర్ కోసం మమ్మల్ని సంప్రదించండి.','ధర','రూపాయలు'],kn:['ನಿಮ್ಮ ಸ್ಥಳೀಯ ಅಂಗಡಿಯಿಂದ ವಿಶೇಷವಾದ ವಸ್ತುವನ್ನು ಖರೀದಿಸಿ.','ವಿವರಗಳು ಮತ್ತು ಆರ್ಡರ್‌ಗಾಗಿ ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ.','ಬೆಲೆ','ರೂಪಾಯಿ'],bn:['আপনার স্থানীয় দোকান থেকে বিশেষ কিছু কিনুন।','বিস্তারিত জানতে এবং অর্ডার করতে আমাদের সঙ্গে যোগাযোগ করুন।','দাম','টাকা']};
 function toast(s){$('toast').textContent=s;$('toast').hidden=false;clearTimeout(timer);timer=setTimeout(()=>$('toast').hidden=true,4500)}
-function i18nLabel(key,fallback){try{return window.DukaanI18n?'▶ '+DukaanI18n.get(window.DukaanScreens?.currentLang()||'en',key):fallback}catch{return fallback}}
-function stop(){window.speechSynthesis?.cancel();$('play').textContent='▶ Play voice preview';$('stop').disabled=true;$('sarvamAudio').pause?.()}
+function i18nText(key,fallback){try{return window.DukaanI18n?DukaanI18n.get(window.DukaanScreens?.currentLang()||'en',key):fallback}catch{return fallback}}
+function i18nLabel(key,fallback){return '▶ '+i18nText(key,fallback.replace(/^▶\s*/,''))}
+function stop(){window.speechSynthesis?.cancel();$('play').textContent=i18nLabel('playPreviewBtn','▶ Play voice preview');$('stop').disabled=true;$('sarvamAudio').pause?.()}
 function priceValid(){const p=$('price');return p.value!==''&&p.validity.valid&&Number(p.value)>0}
 function makeAd(){if(!ready)return;stop();const w=words[$('language').value],priced=$('includePrice').checked&&priceValid()&&$('priceApproved').checked;$('ad').value=[$('title').value+'.',w[0],priced?`${w[2]} ${Number($('price').value).toLocaleString('en-IN')} ${$('p_currency').value==='INR'?w[3]:$('p_currency').value}.`:'',w[1]].filter(Boolean).join(' ');$('priceStatus').textContent=priced?'Merchant-entered price included':'No price in this ad';$('voiceStatus').textContent='Template ad: the product title stays as written. You can edit the script.'}
-async function upload(file){if(!file)return;const uploadId=++uploadSequence;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>10*1024*1024){toast('Choose a JPG, PNG or WebP image under 10 MB.');return}const next=URL.createObjectURL(file),img=new Image();try{await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=next})}catch{URL.revokeObjectURL(next);toast('This image could not be opened. Try another photo.');return}if(uploadId!==uploadSequence){URL.revokeObjectURL(next);return}newProduct();currentFile=file;$('file').value='';if(photoURL)URL.revokeObjectURL(photoURL);photoURL=next;sample=false;$('preview').src=next;$('preview').hidden=false;$('uploadIcon').hidden=true;$('uploadLabel').textContent=file.name;$('uploadHelp').textContent='Click to replace photo';resetDraft();toast('Photo added. Choose a category and create your draft.');if(typeof saveDraft==='function')void saveDraft()}
-function resetDraft(){stop();ready=false;$('listing').hidden=true;$('empty').hidden=false;$('draftTag').textContent='AWAITING DRAFT';$('ad').value='';$('ad').disabled=true;['play','copy','sarvamPlay','reportListen'].forEach(x=>$(x).disabled=true);$('sarvamAudio').hidden=true;$('sarvamAudio').src='';$('reportAudio').hidden=true;$('reportAudio').src='';$('confirmed').checked=false;$('voiceStatus').textContent='';$('reportListenStatus').textContent='';$('priceStatus').textContent='Price stays in your hands'}
+async function upload(file){if(!file)return;const uploadId=++uploadSequence;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>10*1024*1024){toast('Choose a JPG, PNG or WebP image under 10 MB.');return}const next=URL.createObjectURL(file),img=new Image();try{await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=next})}catch{URL.revokeObjectURL(next);toast('This image could not be opened. Try another photo.');return}if(uploadId!==uploadSequence){URL.revokeObjectURL(next);return}newProduct();currentFile=file;$('file').value='';if(photoURL)URL.revokeObjectURL(photoURL);photoURL=next;sample=false;$('preview').src=next;$('preview').hidden=false;$('uploadIcon').hidden=true;$('uploadLabel').textContent=file.name;$('uploadHelp').textContent=i18nText('replacePhoto','Click to replace photo');resetDraft();toast('Photo added. Choose a category and create your draft.');if(typeof saveDraft==='function')void saveDraft()}
+function resetDraft(){stop();ready=false;$('listing').hidden=true;$('empty').hidden=false;$('draftTag').textContent=i18nText('awaitingDraft','AWAITING DRAFT');$('ad').value='';$('ad').disabled=true;['play','copy','sarvamPlay','reportListen'].forEach(x=>$(x).disabled=true);$('sarvamAudio').hidden=true;$('sarvamAudio').src='';$('reportAudio').hidden=true;$('reportAudio').src='';$('confirmed').checked=false;$('voiceStatus').textContent='';$('reportListenStatus').textContent='';$('priceStatus').textContent=i18nText('priceStaysDefault','Price stays in your hands')}
 $('drop').onclick=()=>$('file').click();$('file').onchange=e=>upload(e.target.files[0]);$('drop').ondragover=e=>{e.preventDefault();$('drop').classList.add('drag')};$('drop').ondragleave=()=>$('drop').classList.remove('drag');$('drop').ondrop=e=>{e.preventDefault();$('drop').classList.remove('drag');upload(e.dataTransfer.files[0])};
-function showEditor(){ready=true;$('listing').hidden=false;$('empty').hidden=true;$('draftTag').textContent='EDITABLE DRAFT';$('ad').disabled=false;['play','copy','sarvamPlay','reportListen'].forEach(x=>$(x).disabled=false);window.DukaanScreens?.show('screen-report')}
+function showEditor(){ready=true;$('listing').hidden=false;$('empty').hidden=true;$('draftTag').textContent=i18nText('editableDraft','EDITABLE DRAFT');$('ad').disabled=false;['play','copy','sarvamPlay','reportListen'].forEach(x=>$(x).disabled=false);window.DukaanScreens?.show('screen-report')}
 function generate(){
   if(!photoURL&&!sample){toast('Add a product photo or try the sample saree.');return}
   if(typeof invalidateSocial==='function')invalidateSocial();invalidatePricing();const d=samples[$('category').value];
@@ -28,11 +29,11 @@ $('fallback').onclick=()=>{
 $('sample').onclick=()=>{
   if(ready&&!window.confirm('Start a new sample product? This clears the current listing and its price.'))return;
   ++uploadSequence;newProduct();if(photoURL){URL.revokeObjectURL(photoURL);photoURL=null}
-  sample=true;$('preview').hidden=true;$('uploadIcon').hidden=false;$('uploadLabel').textContent='Sample saree selected';$('uploadHelp').textContent='Sample scenario · no image analysis';$('category').value='saree';generate();
+  sample=true;$('preview').hidden=true;$('uploadIcon').hidden=false;$('uploadLabel').textContent=i18nText('sampleSareeSelected','Sample saree selected');$('uploadHelp').textContent=i18nText('sampleScenarioNote','Sample scenario · no image analysis');$('category').value='saree';generate();
 };
 $('category').onchange=()=>{cancelAnalysis();$('confirmed').checked=false;acceptedFields=acceptedFields.filter(x=>x!=='category');if(analysis){analysis=null;$('analysisPanel').hidden=true;toast('Category changed. Analyze again for fresh suggestions.')}};
 ['title','description','material','condition','price'].forEach(id=>$(id).addEventListener('input',()=>{$('confirmed').checked=false;acceptedFields=acceptedFields.filter(x=>x!==id);if(['title','price'].includes(id))makeAd()}));$('includePrice').onchange=()=>{if($('includePrice').checked&&!priceValid()){$('includePrice').checked=false;toast('Enter a valid selling price first.')} $('confirmed').checked=false;makeAd()};$('language').onchange=()=>{$('confirmed').checked=false;makeAd()};$('ad').oninput=()=>{stop();$('confirmed').checked=false};$('listing').onsubmit=e=>e.preventDefault();
-$('play').onclick=()=>{if(!$('confirmed').checked){toast('Review the details and check the confirmation box before playback.');return}if(!window.speechSynthesis){$('voiceStatus').textContent='Voice playback is unavailable in this browser. You can copy the script.';return}const lang=$('language').value,voice=speechSynthesis.getVoices().find(v=>v.lang.toLowerCase().startsWith(lang));if(!voice){$('voiceStatus').textContent='No matching voice is installed on this device. Install a voice for this language in device settings, or copy the script. Sarvam is not connected.';return}stop();const utterance=new SpeechSynthesisUtterance($('ad').value);utterance.voice=voice;utterance.lang=voice.lang;utterance.rate=.9;utterance.onend=stop;utterance.onerror=()=>{stop();$('voiceStatus').textContent='Playback could not finish. Please try again or copy the script.'};speechSynthesis.speak(utterance);$('play').textContent='Playing…';$('stop').disabled=false;$('voiceStatus').textContent='Playing using '+voice.name};$('stop').onclick=stop;
+$('play').onclick=()=>{if(!$('confirmed').checked){toast('Review the details and check the confirmation box before playback.');return}if(!window.speechSynthesis){$('voiceStatus').textContent='Voice playback is unavailable in this browser. You can copy the script.';return}const lang=$('language').value,voice=speechSynthesis.getVoices().find(v=>v.lang.toLowerCase().startsWith(lang));if(!voice){$('voiceStatus').textContent='No matching voice is installed on this device. Install a voice for this language in device settings, or copy the script. Sarvam is not connected.';return}stop();const utterance=new SpeechSynthesisUtterance($('ad').value);utterance.voice=voice;utterance.lang=voice.lang;utterance.rate=.9;utterance.onend=stop;utterance.onerror=()=>{stop();$('voiceStatus').textContent='Playback could not finish. Please try again or copy the script.'};speechSynthesis.speak(utterance);$('play').textContent=i18nText('playingState','Playing…');$('stop').disabled=false;$('voiceStatus').textContent='Playing using '+voice.name};$('stop').onclick=stop;
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('ad').value);toast('Ad script copied.')}catch{$('ad').focus();$('ad').select();toast('Select and copy the script from the text box.')}};
 $('sarvamPlay').onclick=async()=>{
   if(!$('confirmed').checked){toast('Review the details and check the confirmation box before playback.');return}
@@ -78,15 +79,15 @@ function ondcCatalog(){
 }
 function validateOndcCatalog(c){
   const errors=[];const provider=c.message?.catalog?.providers?.[0],item=provider?.items?.[0];
-  if(!c.context?.domain)errors.push('context.domain is required');
-  if(!c.context?.transaction_id||!c.context?.message_id)errors.push('context.transaction_id and message_id are required');
-  if(!provider?.id)errors.push('provider.id is required');
-  if(!provider?.descriptor?.name)errors.push('provider.descriptor.name is required');
-  if(!item?.id)errors.push('item.id is required');
-  if(!item?.descriptor?.name)errors.push('item.descriptor.name is required');
-  if(!item?.price?.currency||!item?.price?.value)errors.push('item.price.currency and value are required for a sellable ONDC item');
-  if(!item?.category_ids?.length)errors.push('item.category_ids must include at least one category');
-  if(!item?.fulfillment_ids?.length)errors.push('item.fulfillment_ids must reference a fulfillment');
+  if(!c.context?.domain)errors.push(i18nText('ondcMissingDomain','context.domain is required'));
+  if(!c.context?.transaction_id||!c.context?.message_id)errors.push(i18nText('ondcMissingContext','context.transaction_id and message_id are required'));
+  if(!provider?.id)errors.push(i18nText('ondcMissingProviderId','provider.id is required'));
+  if(!provider?.descriptor?.name)errors.push(i18nText('ondcMissingProviderName','provider.descriptor.name is required'));
+  if(!item?.id)errors.push(i18nText('ondcMissingItemId','item.id is required'));
+  if(!item?.descriptor?.name)errors.push(i18nText('ondcMissingItemName','Add a product title.'));
+  if(!item?.price?.currency||!item?.price?.value)errors.push(i18nText('ondcMissingPrice','Add and approve a selling price.'));
+  if(!item?.category_ids?.length)errors.push(i18nText('ondcMissingCategory','item.category_ids must include at least one category'));
+  if(!item?.fulfillment_ids?.length)errors.push(i18nText('ondcMissingFulfillment','item.fulfillment_ids must reference a fulfillment'));
   return errors;
 }
 $('exportOndc').onclick=()=>{
@@ -102,20 +103,20 @@ $('exportOndc').onclick=()=>{
 window.addEventListener('beforeunload',stop);
 if(document.modelContext?.registerTool){const life=new AbortController();try{Promise.resolve(document.modelContext.registerTool({name:'read_catalog_draft',description:'Read the current editable merchant catalog draft without exporting it.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute(input){if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length)throw new Error('Expected an empty object');if(!ready)throw new Error('Create a draft first');return catalog()}},{signal:life.signal})).catch(()=>{});}catch{}window.addEventListener('pagehide',()=>life.abort(),{once:true})}
 
-function cancelAnalysis(){requestSequence++;analysisController?.abort();analysisController=null;$('generate').disabled=false;$('generate').textContent='Generate my listing'}
+function cancelAnalysis(){requestSequence++;analysisController?.abort();analysisController=null;$('generate').disabled=false;$('generate').textContent=i18nText('analyzeButton','Analyze my product')}
 function newProduct(){
   if(typeof invalidateSocial==='function')invalidateSocial();
   cancelAnalysis();productVersion++;resetPricing();currentFile=null;analysis=null;appliedAnalysis=null;acceptedFields=[];draftSource='sample';
   for(const id of ['title','description','material','condition','price','notes'])$(id).value='';
   $('includePrice').checked=false;$('analysisPanel').hidden=true;resetDraft();
 }
-$('notes').addEventListener('input',()=>{cancelAnalysis();$('confirmed').checked=false;if(analysis){analysis=null;$('analysisPanel').hidden=true;$('aiStatus').textContent='Notes changed. Analyze again for fresh evidence.'}});
+$('notes').addEventListener('input',()=>{cancelAnalysis();$('confirmed').checked=false;if(analysis){analysis=null;$('analysisPanel').hidden=true;$('aiStatus').textContent=i18nText('notesChangedStatus','Notes changed. Analyze again for fresh evidence.')}});
 async function analyzePhoto(){
   if(!currentFile){toast('Upload a product photo for Gemini, or use a sample draft.');return}
   cancelAnalysis();const request=++requestSequence,version=productVersion;
   analysisController=new AbortController();const controller=analysisController;
   const timeout=setTimeout(()=>controller.abort(),requestTimeoutMs);
-  $('generate').disabled=true;$('generate').textContent='Analyzing…';$('aiStatus').textContent='Sending photo and notes for AI analysis…';
+  $('generate').disabled=true;$('generate').textContent=i18nText('analyzingState','Analyzing…');$('aiStatus').textContent=i18nText('sendingForAnalysis','Sending photo and notes for AI analysis…');
   $('analyzeErrorBox').hidden=true;if(photoURL){$('analyzingPreview').src=photoURL;$('analyzingPreview').hidden=false}else $('analyzingPreview').hidden=true;
   window.DukaanScreens?.show('screen-analyzing');
   const form=new FormData();form.append('image',currentFile);form.append('notes',$('notes').value);form.append('category',$('category').value);
@@ -128,7 +129,7 @@ async function analyzePhoto(){
     if(request!==requestSequence||version!==productVersion)return;
     if(result.source!=='gemini'||!result.title||!Array.isArray(result.evidence)||!Array.isArray(result.uncertainty)||!Array.isArray(result.missingInformation)||!Array.isArray(result.visibleAttributes))throw new Error('AI returned an invalid result. Use a sample draft.');
     analysis=result;renderAnalysis();if(!ready){$('applyAnalysis').onclick();}if(typeof saveDraft==='function')void saveDraft();
-    $('aiStatus').textContent='Analysis received. Review the evidence and apply supported suggestions.';
+    $('aiStatus').textContent=i18nText('analysisReceivedStatus','Analysis received. Review the evidence and apply supported suggestions.');
     $('confirmed').checked=false;
     window.DukaanScreens?.show('screen-report');
   }catch(error){
@@ -137,7 +138,7 @@ async function analyzePhoto(){
     $('aiStatus').textContent=message;$('analyzeErrorText').textContent=message;$('analyzeErrorBox').hidden=false;
   }finally{
     clearTimeout(timeout);
-    if(request===requestSequence){analysisController=null;$('generate').disabled=false;$('generate').textContent='Generate my listing'}
+    if(request===requestSequence){analysisController=null;$('generate').disabled=false;$('generate').textContent=i18nText('analyzeButton','Analyze my product')}
   }
 }
 function textElement(tag,text,className){const element=document.createElement(tag);element.textContent=text;if(className)element.className=className;return element}
@@ -168,5 +169,5 @@ $('applyAnalysis').onclick=()=>{
 };
 fetch('/api/status').then(r=>r.ok?r.json():Promise.reject()).then(status=>{
   requestTimeoutMs=Number(status.requestTimeoutMs)||45000;if(analysisController||analysis)return;
-  $('aiStatus').textContent=status.configured?'AI configured; the first analysis will verify access.':'AI is not configured. The sample demo is available.';
-}).catch(()=>{if(!analysisController&&!analysis)$('aiStatus').textContent='Static demo mode. Run the Node backend for AI, or use sample drafts.'});
+  $('aiStatus').textContent=status.configured?i18nText('aiConfiguredStatus','AI configured; the first analysis will verify access.'):i18nText('aiNotConfiguredStatus','AI is not configured. The sample demo is available.');
+}).catch(()=>{if(!analysisController&&!analysis)$('aiStatus').textContent=i18nText('staticDemoMode','Static demo mode. Run the Node backend for AI, or use sample drafts.')});

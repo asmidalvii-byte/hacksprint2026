@@ -64,9 +64,10 @@
     const item = output?.message?.catalog?.providers?.[0]?.items?.[0];
     $('ondcSummaryTitle').textContent = item?.descriptor?.name || '—';
     $('ondcSummaryDescription').textContent = item?.descriptor?.long_desc || '';
+    const t = key => DukaanI18n.get(currentLang(), key);
     const rows = [
-      ['Category', item?.category_ids?.[0] || '—'],
-      ['Price', item?.price ? item.price.currency + ' ' + item.price.value : 'Not provided']
+      [t('category'), item?.category_ids?.[0] || '—'],
+      [t('price'), item?.price ? item.price.currency + ' ' + item.price.value : t('notProvided')]
     ];
     $('ondcSummaryList').replaceChildren(...rows.map(([k, v]) => {
       const li = document.createElement('li'); const b = document.createElement('b'); b.textContent = k;
