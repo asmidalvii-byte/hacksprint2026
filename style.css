@@ -19,3 +19,15 @@ main{padding-top:10px}.intro p:not(.eyebrow){display:none}.steps{margin:10px 0}.
 @media(min-width:1000px) and (max-height:760px){
 header{height:48px}main{padding-top:8px}.steps{margin:8px 0}.panel{padding:11px}footer{padding:5px 0}.check{margin-top:7px}
 }
+
+/* AI review additions preserve the existing three-panel workspace. */
+.service-status{font-size:12px;line-height:1.5;color:#52627d;overflow-wrap:anywhere}
+.analysis-panel{border:1px solid #cad5f7;background:#f7f9ff;border-radius:9px;padding:12px;margin-bottom:14px}
+.analysis-panel h3{margin:0 0 8px;font-size:16px}.analysis-panel h4{margin:14px 0 5px;font-size:13px}
+.analysis-panel .muted{font-size:12px}.suggestion{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:400;margin:10px 0;overflow-wrap:anywhere}
+.suggestion input{width:16px;height:16px;flex:none;margin:2px 0}.suggestion span{color:#263653;font-size:13px;margin:0}
+.analysis-panel details{margin-top:12px;font-size:12px;line-height:1.5}.analysis-panel summary{cursor:pointer;font-weight:600}
+.analysis-panel ul{padding-left:18px}.analysis-panel li{margin:6px 0;overflow-wrap:anywhere}
+#notes{resize:vertical;min-height:56px}#fallback{font-size:13px}
+#pricingResult p{font-size:.85rem;line-height:1.5;margin:.6rem 0}#marketingResult{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem;max-height:400px;overflow:auto}.analysis-panel input,.analysis-panel select{max-width:100%}
+#intelligenceDetails pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem}#intelligenceDetails details{margin:.6rem 0}#instagramPreviewPhoto{width:100%;max-height:400px;object-fit:contain}#instagramPreviewCaption{white-space:pre-wrap}#socialPanel button{margin:.4rem 0}summary{cursor:pointer}

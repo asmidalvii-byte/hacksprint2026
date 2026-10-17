@@ -3,3 +3,9 @@
 .env.*
 !.env.example
 node_modules/
+# Local credentials and generated test artifacts
+*service-account*.json
+application_default_credentials.json
+*.pem
+playwright-report/
+test-results/

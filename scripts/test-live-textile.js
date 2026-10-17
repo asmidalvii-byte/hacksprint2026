@@ -1,0 +1,8 @@
+import 'dotenv/config';import {mkdir,readFile,writeFile} from 'node:fs/promises';import {createApp} from '../server/app.js';import {getConfig} from '../server/config.js';
+const config=getConfig();const dir=new URL('../../../outputs/textile-upgrade/',import.meta.url);await mkdir(dir,{recursive:true});
+const server=createApp({config}).listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
+try{const image=await readFile(process.argv[2]);const form=new FormData();form.append('image',new Blob([image],{type:'image/jpeg'}),'product.jpeg');const r=await fetch(base+'/api/analyze-product',{method:'POST',body:form});const analysis=await r.json();await writeFile(new URL('LIVE-TEXTILE.json',dir),JSON.stringify(analysis,null,2));
+const summary={model:config.model,image_status:r.status,intelligence_present:Boolean(analysis.intelligence),attributes_verified:false};
+// Synthetic reviewed facts test API transport only, not actual merchant approval of this photo.
+const m=await fetch(base+'/api/marketing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Blue patterned textile',description:'A blue textile with a contrasting border and decorative motifs.',language:'hi',reviewed:true})});const marketing=await m.json();await writeFile(new URL('LIVE-MARKETING-TEST.json',dir),JSON.stringify(marketing,null,2));summary.marketing_status=m.status;summary.marketing_source=marketing.source;summary.marketing_input='synthetic reviewed facts, not actual seller approval';await writeFile(new URL('LIVE-RESULT.json',dir),JSON.stringify(summary,null,2));console.log(summary);
+}finally{server.closeAllConnections();await new Promise(r=>server.close(r))}

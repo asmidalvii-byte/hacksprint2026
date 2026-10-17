@@ -1,0 +1,12 @@
+import {test,expect} from '@playwright/test';
+test('pricing UI: no evidence, cost recommendation, seller edit, approval, marketing and download',async({page})=>{
+ await page.goto('/');await page.locator('#sample').click();await page.getByText('Optional pricing & positioning',{exact:true}).click();await page.locator('#calculatePricing').click();await expect(page.locator('#pricingResult')).toContainText('more evidence needed');
+ await page.locator('#p_seller_cost').fill('800');await page.locator('#p_seller_target_margin').fill('20');await page.locator('#calculatePricing').click();await expect(page.locator('#pricingResult')).toContainText('INR 1000.00');
+ await page.locator('#price').fill('950');await page.locator('#acceptPricing').click();await expect(page.locator('#price')).toHaveValue('950');
+ await page.locator('#price').fill('');await page.locator('#acceptPricing').click();await expect(page.locator('#price')).toHaveValue('1000');await expect(page.locator('#confirmed')).not.toBeChecked();
+ await page.locator('#price').fill('1100');await page.locator('#priceApproved').check();await page.locator('#positioning').selectOption('premium');await page.locator('#generateMarketing').click();await expect(page.locator('#marketingResult')).toContainText('unclassified');
+ await page.locator('#confirmed').check();const downloaded=page.waitForEvent('download');await page.locator('#export').click();const stream=await(await downloaded).createReadStream();const chunks=[];for await(const chunk of stream)chunks.push(chunk);const result=JSON.parse(Buffer.concat(chunks));
+ expect(result.schema).toBe('dukaan-scan.catalog-draft.v3');expect(result.pricing.recommended_selling_price).toBe(1000);expect(result.pricing.seller_confirmed_price).toBe(1100);expect(result.pricing.estimated_typical).toBeNull();expect(result.marketing.caption).toContain('1100');
+ await page.locator('#p_seller_cost').fill('900');await expect(page.locator('#priceApproved')).not.toBeChecked();await expect(page.locator('#confirmed')).not.toBeChecked();
+});
+test('pricing service failure falls back to labelled local rules',async({page})=>{await page.route('**/api/pricing',r=>r.fulfill({status:503,json:{error:{message:'Test outage'}}}));await page.goto('/');await page.locator('#sample').click();await page.getByText('Optional pricing & positioning',{exact:true}).click();await page.locator('#calculatePricing').click();await expect(page.locator('#pricingResult')).toContainText('service_unavailable_local_rules_used');await expect(page.locator('#price')).toHaveValue('')});
