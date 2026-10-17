@@ -228,11 +228,9 @@
             <input id="p_seller_cost" type="number" min="0" step="0.01" max="10000000">
             <label for="p_seller_target_margin" data-i18n="marginLabel">Desired gross margin (%)</label>
             <input id="p_seller_target_margin" type="number" min="0" step="0.01" max="99.99">
-            <label for="p_sales_channel" data-i18n="channelLabel">Sales channel</label>
-            <input id="p_sales_channel" type="text" maxlength="200">
-            <label for="p_target_customer" data-i18n="customerLabel">Target customer</label>
-            <input id="p_target_customer" type="text" maxlength="200">
-            <label class="check"><input id="p_use_ai" type="checkbox"> <span data-i18n="useAiLabel">Ask Gemini for extra pricing questions</span></label>
+            <input id="p_sales_channel" type="hidden" value="">
+            <input id="p_target_customer" type="hidden" value="">
+            <label class="check pricing-ai-option"><input id="p_use_ai" type="checkbox"> <span data-i18n="useAiLabel">Ask Gemini for extra pricing questions</span></label>
             <button id="calculatePricing" class="secondary" type="button" data-i18n="calcPricingBtn">Calculate pricing advice</button>
             <div id="pricingContext"></div>
             <div id="pricingResult" role="status" data-i18n="noEstimateYet">No estimate yet.</div>
@@ -311,17 +309,16 @@
       <p id="draftSaveStatus" role="status" data-i18n="draftSavingInit">Draft saving initializes on this device.</p>
       <button id="saveDraft" type="button" class="secondary" >Save draft</button>
 
-      <p id="instagramStatus" role="status" data-i18n="instagramSetupRequired">Instagram publishing setup required.</p>
-      <details>
+      <p id="instagramStatus" role="status" hidden></p>
+      <details hidden>
         <summary data-i18n="instagramConnectionSummary">Instagram connection &amp; setup</summary>
         <div id="instagramSetupDetails"></div>
         <button id="refreshInstagramStatus" class="secondary" type="button" data-i18n="refreshStatusBtn">Refresh connection status</button>
         <p data-i18n="neverPasswordNote">Never enter your Instagram password here.</p>
       </details>
-      <p id="cloudStatus" role="status" data-i18n="checkingCloud">Checking cloud configuration…</p>
+      <p id="cloudStatus" role="status" hidden></p>
       <section id="socialPanel" aria-labelledby="instagramHeading" hidden>
-        <p id="socialSource"></p>
-        <p data-i18n="socialLanguageNote">Change language above, then regenerate.</p>
+        <p id="socialSource" hidden></p>
         <label class="check"><input id="socialIncludePrice" type="checkbox"> <span data-i18n="includeApprovedPriceLabel">Include my approved selling price</span></label>
         <label for="social_instagram_caption" data-i18n="captionLabel">Instagram caption</label>
         <textarea id="social_instagram_caption" rows="3"></textarea>
