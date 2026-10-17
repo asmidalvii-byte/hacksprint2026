@@ -29,3 +29,5 @@ test('pricing HTTP integration validates requests and exports schema without AI'
  const response=await post({...facts,seller_cost:800,seller_target_margin:20});assert.equal(response.status,200);const p=await response.json();assert.ok(validatePricing(p));assert.equal(p.recommended_selling_price,1000);assert.equal(p.seller_approval_status,'pending');
  for(const value of [{comparable_products:records},{seller_cost:-1},{seller_target_margin:100},{currency:'XYZ'}])assert.equal((await post(value)).status,400);
 });
+
+test('margin accepts 99 percent but rejects 100 and negatives',()=>{assert.equal(estimate({seller_cost:10,seller_target_margin:99}).cost_based_price,1000);for(const margin of [100,101,-1])assert.throws(()=>estimate({seller_cost:10,seller_target_margin:margin}));});

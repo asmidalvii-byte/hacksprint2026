@@ -73,7 +73,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
   app.post('/api/pricing', limiter, express.json({limit:'16kb'}), async (req,res,next) => {
     const allowed = ['currency','market','location','category','subcategory','material','dimensions','workmanship','accessories','condition','seller_cost','seller_target_margin','sales_channel','target_customer','use_ai'];
     const input = req.body;
-    if (!input || Array.isArray(input) || Object.keys(input).some(k => !allowed.includes(k)) || Object.entries(input).some(([k,v]) => ['seller_cost','seller_target_margin'].includes(k) ? v !== null && (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > (k === 'seller_cost' ? 10000000 : 95)) : k === 'use_ai' ? typeof v !== 'boolean' : typeof v !== 'string' || v.length > 200)) return res.status(400).json({error:{message:'Invalid pricing inputs.'}});
+    if (!input || Array.isArray(input) || Object.keys(input).some(k => !allowed.includes(k)) || Object.entries(input).some(([k,v]) => ['seller_cost','seller_target_margin'].includes(k) ? v !== null && (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || (k === 'seller_cost' ? v > 10000000 : v >= 100)) : k === 'use_ai' ? typeof v !== 'boolean' : typeof v !== 'string' || v.length > 200)) return res.status(400).json({error:{message:'Invalid pricing inputs.'}});
     if (input.currency && !['INR','USD','GBP','EUR'].includes(input.currency)) return res.status(400).json({error:{message:'Unsupported currency.'}});
     if (active >= 2) return res.status(503).json({error:{message:'Service busy. Try again.'}});
     active++;

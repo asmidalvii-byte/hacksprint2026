@@ -5,7 +5,8 @@ function estimate(input={},records=[],now=new Date()){
  if(!['INR','USD','GBP','EUR'].includes(currency))throw Error('Unsupported currency');
  const num=(key,max)=>{const v=input[key];if(v==null||v==='')return null;if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>max)throw Error('Invalid '+key);return v};
  const text=k=>typeof input[k]==='string'?input[k].trim().slice(0,200):'';
- const cost=num('seller_cost',10000000),margin=num('seller_target_margin',95),category=text('category'),material=text('material'),market=text('market'),location=text('location'),channel=text('sales_channel');
+ const cost=num('seller_cost',10000000),margin=num('seller_target_margin',100),category=text('category'),material=text('material'),market=text('market'),location=text('location'),channel=text('sales_channel');
+ if(margin!==null&&margin>=100)throw Error('Gross margin must be at least 0% and below 100%.');
  const missing=[];
  for(const k of ['material','market','location','sales_channel','dimensions','workmanship','accessories','condition','subcategory'])if(!text(k))missing.push('Confirm '+k+' with the seller.');
  const comparable=records.filter(r=>{const age=now-new Date(r.observed_at);return r.review_status==='verified'&&r.source_type==='retailer_listing'&&/^https:\/\//.test(r.url||'')&&r.reviewer&&r.comparability_notes&&age>=0&&age<=30*86400000&&r.currency===currency&&r.market===market&&r.location===location&&r.sales_channel===channel&&r.category===category&&material&&r.material?.toLowerCase()===material.toLowerCase()&&['dimensions','workmanship','accessories','condition','subcategory'].every(k=>text(k)&&r[k]===text(k))&&Number.isFinite(r.listed_price)&&r.listed_price>0&&r.listed_price<=10000000}).filter((r,i,a)=>a.findIndex(v=>v.url===r.url)===i);
