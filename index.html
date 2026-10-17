@@ -10,19 +10,41 @@
 <link rel="stylesheet" href="kriti-ui.css">
 </head>
 <body>
-<section class="account-panel" aria-label="Seller account">
-<details open><summary>Kriti · Seller account</summary>
-<p id="account_status" role="status">Checking account setup…</p>
-<form id="account_form"><label for="account_email">Email</label><input id="account_email" type="email" autocomplete="username" required><label for="account_password">Password</label><input id="account_password" type="password" autocomplete="current-password" minlength="8" required><div class="actions"><button id="account_login" type="submit">Sign in</button><button id="account_register" type="button">Register</button><button id="account_reset" type="button">Reset password</button></div></form>
+<section class="account-panel auth-shell" aria-label="Seller account">
+<aside class="auth-story" id="account_story">
+ <div class="brand-mark"><span class="logo">K</span>Kriti<span class="auth-edition">MERCHANT STUDIO</span></div>
+ <p class="auth-eyebrow">MADE FOR YOUR BUSINESS</p>
+ <h1>Your craft.<br>Your story.<br>Your storefront.</h1>
+ <p>Bring your products online with thoughtful catalogs and marketing in your language.</p>
+ <ol class="auth-benefits"><li>Start with a product photo</li><li>Review every detail and price</li><li>Share a story your customers understand</li></ol>
+ <p class="auth-footnote">Built for independent makers and small merchants.</p>
+</aside>
+<div class="auth-content">
+<p class="auth-eyebrow">YOUR SELLER ACCOUNT</p><h2 id="account_heading">Welcome back</h2>
+<p class="auth-intro" id="account_intro">Sign in to continue your work with Kriti.</p>
+<div class="auth-switch" id="account_modes" role="group" aria-label="Account action"><button id="account_mode_login" type="button" aria-pressed="true">Sign in</button><button id="account_mode_register" type="button" aria-pressed="false">Create account</button></div>
+<p id="account_status" role="status" aria-live="polite">Checking account setup…</p>
+<form id="account_form">
+<label for="account_email">Email address</label><input id="account_email" type="email" autocomplete="username" placeholder="you@yourbusiness.com" required>
+<label for="account_password">Password</label><input id="account_password" type="password" autocomplete="current-password" minlength="8" required aria-describedby="account_password_hint"><p class="auth-hint" id="account_password_hint">Use at least 8 characters.</p>
+<fieldset id="account_business_fields" hidden><legend>Business registration</legend>
+<label for="account_id_type">Registration type</label><select id="account_id_type"><option value="gst">GSTIN</option><option value="udyam">Udyam registration</option></select>
+<label for="account_business_id" id="account_id_label">GSTIN</label><input id="account_business_id" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="19" placeholder="15-character GSTIN" aria-describedby="account_id_help account_id_error">
+<p class="auth-hint" id="account_id_help">Enter your 15-character GSTIN. Format checking does not verify registration or ownership.</p><p id="account_id_error" class="auth-error" role="alert"></p>
+<label class="auth-consent"><input id="account_business_consent" type="checkbox"> <span>I agree to store this business ID with my account for registration review.</span></label>
+</fieldset>
+<button class="primary wide" id="account_login" type="submit">Sign in</button><button class="primary wide" id="account_register" type="button" hidden>Create account</button><button class="text-button wide" id="account_reset" type="button">Forgot password?</button>
+</form>
+<div class="auth-note"><strong>Business registration required</strong><p>Create an account with a GSTIN or Udyam ID. Demo checks validate the format only; access to protected tools requires separate business approval.</p><button id="account_demo" type="button" class="text-button">Preview a sample verification</button><p id="account_demo_result" role="status" hidden></p></div>
 <form id="account_new_password" hidden><label for="account_replacement">New password</label><input id="account_replacement" type="password" autocomplete="new-password" minlength="8" required><button type="submit">Save new password</button></form>
 <button id="account_logout" type="button" hidden>Sign out</button>
 <details id="account_products" hidden><summary>Saved products</summary><button id="account_refresh" type="button">Refresh products</button><div id="account_product_list"></div></details>
-<details><summary>Verify your business</summary><p>Identity: <strong id="verification_identity">Not started</strong> · Business: <strong id="verification_business">Not started</strong> · GST: <strong id="verification_gst">Not started</strong></p>
+<details id="account_verification" hidden><summary>Business verification</summary><p>Identity: <strong id="verification_identity">Not started</strong> · Business: <strong id="verification_business">Not started</strong> · GST: <strong id="verification_gst">Not started</strong></p>
 <p id="verification_status" role="status">Verification setup required. No authorized provider is connected.</p>
 <p>When available, verification will request your legal name, business name, business type, state and address. GSTIN is optional for businesses that are registered. Identity documents will be requested only if required by the authorized provider.</p>
-<details><summary>Privacy and consent</summary><p>No identity documents, Aadhaar, PAN or GSTIN are collected here while verification is unavailable. Provider-specific consent and retention terms must be shown before submission is enabled.</p></details>
+<details><summary>Privacy and consent</summary><p>Your registration ID is stored with your account as seller-provided information. No Aadhaar or identity documents are requested. Sample results do not verify your business.</p></details>
 <button id="verification_submit" type="button">Check verification availability</button><button id="verification_refresh" type="button">Refresh my status</button></details>
-</details></section>
+</div></section>
 <div id="workspace" hidden>
 
 <div id="app">

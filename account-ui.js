@@ -22,6 +22,43 @@ function registrationError(error,action='Registration'){
  const code=typeof error?.code==='string'&&/^[a-z_]{1,64}$/.test(error.code)?error.code:'unknown';
  return action+' could not complete (code: '+code+'). Share this code, not your password, so setup can be checked.';
 }
+function registrationIdentity(){
+ const type=document.getElementById('account_id_type').value;
+ const field=document.getElementById('account_business_id');
+ const identifier=field.value.trim().toUpperCase();field.value=identifier;
+ const valid=type==='gst'?/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(identifier):type==='udyam'&&/^UDYAM-[A-Z]{2}-[0-9]{2}-[0-9]{7}$/.test(identifier);
+ field.setAttribute('aria-invalid',String(!valid));
+ const error=document.getElementById('account_id_error');
+ error.textContent=valid?'':type==='gst'?'Enter a GSTIN in the required 15-character format.':'Enter an Udyam ID in the format UDYAM-XX-00-0000000.';
+ if(!valid){field.focus();return null}
+ if(!document.getElementById('account_business_consent').checked){error.textContent='Please agree to store your business ID before creating an account.';document.getElementById('account_business_consent').focus();return null}
+ return {business_id_type:type,business_id:identifier,business_id_consent:true};
+}
+let accountMode='login';
+function setAccountMode(mode){
+ accountMode=mode;const registering=mode==='register';
+ document.getElementById('account_heading').textContent=registering?'Create your seller account':'Welcome back';
+ document.getElementById('account_intro').textContent=registering?'Start with your email and business registration ID.':'Sign in to continue your work with Kriti.';
+ document.getElementById('account_business_fields').hidden=!registering;
+ document.getElementById('account_register').hidden=!registering;document.getElementById('account_login').hidden=registering;
+ document.getElementById('account_reset').hidden=registering;
+ document.getElementById('account_password').autocomplete=registering?'new-password':'current-password';
+ document.getElementById('account_mode_login').setAttribute('aria-pressed',String(!registering));
+ document.getElementById('account_mode_register').setAttribute('aria-pressed',String(registering));
+}
+document.getElementById('account_mode_login').onclick=()=>setAccountMode('login');
+document.getElementById('account_mode_register').onclick=()=>setAccountMode('register');
+document.getElementById('account_id_type').onchange=()=>{
+ const udyam=document.getElementById('account_id_type').value==='udyam';
+ document.getElementById('account_id_label').textContent=udyam?'Udyam registration number':'GSTIN';
+ document.getElementById('account_business_id').placeholder=udyam?'UDYAM-XX-00-0000000':'15-character GSTIN';
+ document.getElementById('account_id_help').textContent=udyam?'Enter your Udyam registration number. Format checking does not verify registration or ownership.':'Enter your 15-character GSTIN. Format checking does not verify registration or ownership.';
+ document.getElementById('account_id_error').textContent='';
+};
+document.getElementById('account_demo').onclick=async()=>{
+ const output=document.getElementById('account_demo_result');output.hidden=false;output.textContent='Loading sample…';
+ try{const r=await accountNativeFetch('/api/demo/verification');if(!r.ok)throw Error();const sample=await r.json();if(sample.demo!==true||sample.authoritative!==false)throw Error();output.textContent='Sample Handloom Store · Sample Udyam check: passed. Demonstration only; no real business was checked and account access is unchanged.'}catch{output.textContent='The sample preview is unavailable. Your account status is unchanged.'}
+};
 /* Supabase public client. Seller API requests are independently authenticated server-side. */
 window.KritiAccount={configured:false,user:null,client:null};
 const accountNativeFetch=window.fetch.bind(window);
@@ -33,12 +70,22 @@ window.KritiAccount.ready=(async()=>{
   const account=window.KritiAccount;account.configured=true;
   account.client=supabase.createClient(settings.url,settings.key);
   window.fetch=async(input,init={})=>{if(typeof input==='string'&&input.startsWith('/api/')){const {data:{session}}=await account.client.auth.getSession();const headers=new Headers(init.headers);if(session)headers.set('Authorization','Bearer '+session.access_token);return accountNativeFetch(input,{...init,headers})}return accountNativeFetch(input,init)};
-  const apply=session=>{account.user=session?.user||null;document.getElementById('workspace').hidden=!account.user;document.getElementById('account_form').hidden=Boolean(account.user);document.getElementById('account_logout').hidden=!account.user;document.getElementById('account_products').hidden=!account.user;message.textContent=account.user?'Signed in as '+account.user.email:'Sign in to save your products securely.'};
+  let accessGeneration=0;
+  const apply=session=>{
+   const generation=++accessGeneration;account.user=session?.user||null;account.accessAllowed=false;
+   document.getElementById('workspace').hidden=true;document.getElementById('account_form').hidden=Boolean(account.user);document.getElementById('account_logout').hidden=!account.user;document.getElementById('account_products').hidden=true;
+   document.getElementById('account_modes').hidden=Boolean(account.user);document.getElementById('account_story').hidden=Boolean(account.user);document.getElementById('account_verification').hidden=!account.user;
+   message.textContent=account.user?'Signed in. Checking business approval…':'Sign in to save your products securely.';
+   if(!account.user)return;
+   document.getElementById('account_heading').textContent='Your business account';document.getElementById('account_intro').textContent='Business approval is required to open your seller workspace.';
+   accountNativeFetch('/api/seller/verification',{headers:{Authorization:'Bearer '+session.access_token}}).then(async r=>{if(!r.ok)throw Error();const result=await r.json();if(generation!==accessGeneration)return;account.accessAllowed=result.data?.access_allowed===true;document.getElementById('workspace').hidden=!account.accessAllowed;document.getElementById('account_products').hidden=!account.accessAllowed;message.textContent=account.accessAllowed?'Signed in as '+account.user.email:'Signed in. Business approval is still required. Sample checks do not grant access.'}).catch(()=>{if(generation===accessGeneration)message.textContent='Signed in, but business approval could not be confirmed. Refresh your status to retry.'});
+  };
+  account.refreshAccess=async()=>{const {data:{session}}=await account.client.auth.getSession();apply(session)};
   const {data:{session},error}=await account.client.auth.getSession();if(error)throw error;apply(session);
   account.client.auth.onAuthStateChange((event,session)=>{if(event==='PASSWORD_RECOVERY'){document.getElementById('account_new_password').hidden=false;document.getElementById('workspace').hidden=true;return}if(event==='SIGNED_OUT'){location.reload();return}if(session?.user.id!==account.user?.id&&event==='SIGNED_IN'){location.reload();return}apply(session)});
   let signingIn=false,resetting=false;
   document.getElementById('account_form').onsubmit=async e=>{
-   e.preventDefault();if(signingIn)return;
+   e.preventDefault();if(accountMode==='register')return document.getElementById('account_register').onclick();if(signingIn)return;
    const email=document.getElementById('account_email'),password=document.getElementById('account_password'),button=document.getElementById('account_login');
    email.value=email.value.trim();if(!email.reportValidity()||!password.reportValidity())return;
    signingIn=true;button.disabled=true;message.textContent='Signing in…';
@@ -50,8 +97,9 @@ window.KritiAccount.ready=(async()=>{
    if(registering)return;
    const email=document.getElementById('account_email'),password=document.getElementById('account_password'),button=document.getElementById('account_register');
    email.value=email.value.trim();if(!email.reportValidity()||!password.reportValidity())return;
+   const business=registrationIdentity();if(!business)return;
    registering=true;button.disabled=true;message.textContent='Creating your account…';
-   try{const {data,error}=await account.client.auth.signUp({email:email.value,password:password.value,options:{emailRedirectTo:location.origin}});message.textContent=error?registrationError(error):data?.session?'Signed in.': 'Registration request accepted. Check your email to confirm; if you already registered, sign in or reset your password.'}
+   try{const {data,error}=await account.client.auth.signUp({email:email.value,password:password.value,options:{emailRedirectTo:location.origin,data:business}});message.textContent=error?registrationError(error):data?.session?'Signed in. Business approval is required before using protected tools.': 'Registration request accepted. Check your email to confirm; business approval is a separate step.'}
    catch(error){message.textContent=registrationError(error)}finally{registering=false;button.disabled=false}
   };
   document.getElementById('account_reset').onclick=async()=>{
@@ -63,12 +111,13 @@ window.KritiAccount.ready=(async()=>{
    catch(error){message.textContent=registrationError(error,'Password reset')}finally{resetting=false;button.disabled=false}
   };
   document.getElementById('account_new_password').onsubmit=async e=>{e.preventDefault();const {error}=await account.client.auth.updateUser({password:document.getElementById('account_replacement').value});message.textContent=error?'Password update failed. Request a new reset email.':'Password updated.';if(!error)location.reload()};
-  document.getElementById('account_logout').onclick=async()=>{if(!await saveDraft()){message.textContent='Sign-out paused because saving failed. Retry saving to preserve your edits.';return}const {error}=await account.client.auth.signOut();if(error)message.textContent='Sign-out failed. Try again.'};
+  document.getElementById('account_logout').onclick=async()=>{if(!(account.user&&account.accessAllowed===false)&&!await saveDraft()){message.textContent='Sign-out paused because saving failed. Retry saving to preserve your edits.';return}const {error}=await account.client.auth.signOut();if(error)message.textContent='Sign-out failed. Try again.'};
   document.getElementById('account_refresh').onclick=account.listProducts;
  }catch{message.textContent='Account service unavailable or setup incomplete. Reload after fixing configuration.';document.getElementById('workspace').hidden=true}
 })();
 window.KritiAccount.listProducts=async()=>{const list=document.getElementById('account_product_list');try{const r=await fetch('/api/products');if(!r.ok)throw Error();const products=await r.json();list.replaceChildren();for(const p of products){const b=document.createElement('button');b.type='button';b.textContent=p.title||'Untitled product';b.onclick=async()=>{if(!await saveDraft())return;await loadCloudProduct(p.id);window.DukaanScreens?.show('screen-report')};list.append(b)}}catch{document.getElementById('account_status').textContent='Could not load saved products. Your open draft is unchanged.'}};
 document.getElementById('verification_submit').onclick=async()=>{document.getElementById('verification_status').textContent='Verification setup required. No authorized provider is connected. Details have not been submitted.'};
 document.getElementById('verification_refresh').onclick=async()=>{
+ window.KritiAccount.refreshAccess?.();
  if(!window.KritiAccount.user)return;try{const r=await fetch('/api/verification');if(!r.ok)throw Error();const data=await r.json();for(const kind of ['identity','business','gst']){const record=data.records.find(x=>x.kind===kind);document.getElementById('verification_'+kind).textContent=record?.status==='verified'&&record.verified_at&&(!record.expires_at||Date.parse(record.expires_at)>Date.now())?'Verified':(record?.status==='verified'?'Requires re-verification':record?.status||'Not started').replaceAll('_',' ')}document.getElementById('verification_status').textContent=data.message}catch{document.getElementById('verification_status').textContent='Unable to load verification status. No verification claimed.'}
 };
