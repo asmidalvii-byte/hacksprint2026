@@ -97,3 +97,9 @@ See [pricing implementation and test report](docs/PRICING.md). Cost/margin advic
 ## Advanced textile intelligence
 
 See [textile upgrade report](docs/TEXTILE-UPGRADE.md). New vision responses include structured observations and separately labelled material hypotheses; seller-reviewed marketing supports the five existing languages. No Instagram publishing, craft database or market feed is connected. Live schema checks passed across saree, pottery and jewellery inputs; material truth and rendered UI still require review.
+
+## Final milestone demo
+
+See [final milestone implementation and setup report](docs/FINAL-MILESTONES.md). Drafts and uploaded photos now persist locally in IndexedDB; wait for the saved status before closing. Edits survive regeneration cancellation/failure. Download Creative uses the actual uploaded photo. Pricing accepts margins from 0% up to, but not including, 100%.
+
+Instagram publishing, Cloud Storage and BigQuery show truthful setup-required/not-connected states; they are not integrated services yet. Existing Gemini API-key analysis remains available. The report contains the demo sequence, exact missing setup and test evidence.

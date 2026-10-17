@@ -1,7 +1,10 @@
-let socialDraft=null,socialSequence=0,socialController=null;
+let socialDraft=null,socialSequence=0,socialController=null,socialDirty=false,socialContextStale=false;
 const socialFields=['instagram_caption','hashtags','marketplace_description','whatsapp_message','voice_ad','alternative_captions'];
-function invalidateSocial(){socialSequence++;socialController?.abort();socialController=null;socialDraft=null;$('socialApproved').checked=false;$('socialPanel').hidden=true;$('generateSocial').disabled=false;}
-function socialExport(){if(!socialDraft)return null;return {...socialDraft,...Object.fromEntries(socialFields.map(k=>[k,['hashtags','alternative_captions'].includes(k)?$('social_'+k).value.split('\n').filter(Boolean):$('social_'+k).value])),review_status:$('socialApproved').checked?'approved':'pending'}}
+function invalidateSocial(){socialSequence++;socialController?.abort();socialController=null;socialDraft=null;socialDirty=false;socialContextStale=false;$('socialApproved').checked=false;$('socialPanel').hidden=true;$('generateSocial').disabled=false;}
+function approvedSocialPrice(){return $('socialIncludePrice').checked&&$('priceApproved').checked&&priceValid()?`${$('p_currency').value} ${Number($('price').value).toFixed(2)}`:''}
+function socialExport(){if(!socialDraft)return null;const value={...socialDraft,...Object.fromEntries(socialFields.map(k=>[k,['hashtags','alternative_captions'].includes(k)?$('social_'+k).value.split('\n').filter(Boolean):$('social_'+k).value])),review_status:$('socialApproved').checked?'approved':'pending'};const price=approvedSocialPrice();if(price)for(const k of ['instagram_caption','whatsapp_message','voice_ad'])value[k]+='\n'+price;return value;}
+function markSocialContextChanged(){socialSequence++;socialController?.abort();$('generateSocial').disabled=false;if(!socialDraft)return;socialContextStale=true;$('socialApproved').checked=false;$('confirmed').checked=false;$('socialIncludePrice').checked=false;$('socialSource').textContent='Listing changed. Your draft edits are preserved; review them against the updated product before sharing.';updateInstagramPreview();}
+
 function renderIntelligence(){
  const data=analysis?.intelligence,box=$('intelligenceDetails');box.replaceChildren();if(!data)return;
  const hypotheses=data.material_hypotheses.map(h=>`${h.material_name}: ${h.likelihood_label} (${h.confidence} confidence). Alternatives: ${h.alternative_explanations.join('; ')}. Verify: ${h.verification_method}`);
@@ -14,25 +17,32 @@ function renderIntelligence(){
 }
 $('generateSocial').onclick=async()=>{
  if(!$('confirmed').checked){toast('Review and approve the listing before generating marketing.');return}
- invalidateSocial();const request=++socialSequence,controller=new AbortController();socialController=controller;const timeout=setTimeout(()=>controller.abort(),requestTimeoutMs);$('generateSocial').disabled=true;
+ if(socialDraft&&(socialDirty||socialContextStale)&&!window.confirm('Replace your existing edited marketing draft? Cancel keeps your edits.'))return;
+ const previousDraft=socialDraft;const previousValues=Object.fromEntries(socialFields.map(k=>[k,$('social_'+k).value]));
+ socialSequence++;socialController?.abort();const request=++socialSequence,controller=new AbortController();socialController=controller;const timeout=setTimeout(()=>controller.abort(),requestTimeoutMs);$('generateSocial').disabled=true;
  let result;const input={title:$('title').value,description:$('description').value,language:$('language').value,reviewed:true};
  try{
   const response=await fetch('/api/marketing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input),signal:controller.signal});if(!response.ok)throw Error('unavailable');result=await response.json();
  }catch{
+  if(previousDraft){if(request===socialSequence){socialDraft=previousDraft;for(const k of socialFields)$('social_'+k).value=previousValues[k];$('socialSource').textContent='Regeneration failed. Your previous draft and edits are preserved.';$('generateSocial').disabled=false;}return}
   const w=words[input.language];result={language:input.language,instagram_caption:input.title+'. '+w[0],hashtags:[],marketplace_description:input.description,whatsapp_message:input.title+'. '+w[1],voice_ad:input.title+'. '+w[0]+' '+w[1],alternative_captions:[input.title+'. '+w[1]],source:'local_template_backend_unavailable',review_status:'pending'};
  }finally{clearTimeout(timeout)}
- if(request!==socialSequence)return;socialDraft=result;
- if($('priceApproved').checked&&priceValid())for(const k of ['instagram_caption','whatsapp_message','voice_ad'])socialDraft[k]+=` ${$('p_currency').value} ${Number($('price').value).toFixed(2)}.`;
+ if(request!==socialSequence)return;socialDraft=result;socialDirty=false;socialContextStale=false;$('socialApproved').checked=false;
+
  for(const k of socialFields)$('social_'+k).value=Array.isArray(socialDraft[k])?socialDraft[k].join('\n'):socialDraft[k]||'';
  $('socialSource').textContent='Source: '+socialDraft.source+' · translation and claims require your review. Instagram publishing is not connected.';
- $('socialPanel').hidden=false;$('generateSocial').disabled=false;$('confirmed').checked=false;updateInstagramPreview();
+ $('socialPanel').hidden=false;$('generateSocial').disabled=false;$('confirmed').checked=false;updateInstagramPreview();if(typeof saveDraft==='function')void saveDraft();
 };
-function updateInstagramPreview(){$('instagramPreviewCaption').textContent=$('social_instagram_caption').value+'\n'+$('social_hashtags').value;if(photoURL){$('instagramPreviewPhoto').src=photoURL;$('instagramPreviewPhoto').hidden=false}else $('instagramPreviewPhoto').hidden=true;}
-for(const k of socialFields)$('social_'+k).addEventListener('input',()=>{$('socialApproved').checked=false;$('confirmed').checked=false;updateInstagramPreview()});
-for(const k of ['title','description','material','condition','price','category','notes','language','p_currency','priceApproved'])$(k).addEventListener('input',invalidateSocial);
+function updateInstagramPreview(){$('instagramPreviewCaption').textContent=(socialExport()?.instagram_caption||'')+'\n'+$('social_hashtags').value;if(photoURL){$('instagramPreviewPhoto').src=photoURL;$('instagramPreviewPhoto').hidden=false}else $('instagramPreviewPhoto').hidden=true;}
+for(const k of socialFields)$('social_'+k).addEventListener('input',()=>{socialDirty=true;$('socialApproved').checked=false;$('confirmed').checked=false;updateInstagramPreview()});
+for(const k of ['title','description','material','condition','price','category','notes','language','p_currency','priceApproved'])$(k).addEventListener('input',markSocialContextChanged);
 $('socialApproved').onchange=()=>{$('confirmed').checked=false};
 function shareReady(){if(!socialDraft||!$('socialApproved').checked||!$('confirmed').checked){toast('Approve the edited marketing and final listing before sharing.');return false}return true}
-$('copyInstagram').onclick=async()=>{if(!shareReady())return;try{await navigator.clipboard.writeText($('social_instagram_caption').value+'\n'+$('social_hashtags').value);toast('Instagram caption copied.')}catch{toast('Clipboard unavailable. Select and copy the caption.')}};
-$('shareWhatsApp').onclick=()=>{if(shareReady())window.open('https://wa.me/?text='+encodeURIComponent($('social_whatsapp_message').value),'_blank','noopener,noreferrer')};
+$('copyInstagram').onclick=async()=>{if(!shareReady())return;try{await navigator.clipboard.writeText((socialExport()?.instagram_caption||'')+'\n'+$('social_hashtags').value);toast('Instagram caption copied.')}catch{toast('Clipboard unavailable. Select and copy the caption.')}};
+$('shareWhatsApp').onclick=()=>{if(shareReady())window.open('https://wa.me/?text='+encodeURIComponent(socialExport().whatsapp_message),'_blank','noopener,noreferrer')};
 $('downloadMarketing').onclick=()=>{if(!shareReady())return;const url=URL.createObjectURL(new Blob([JSON.stringify(socialExport(),null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='dukaan-marketing-draft.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
-$('useSocialVoice').onclick=()=>{if(!shareReady())return;$('ad').value=$('social_voice_ad').value;$('confirmed').checked=false;toast('Voice script applied. Review the listing again before playback.');};
+$('useSocialVoice').onclick=()=>{if(!shareReady())return;$('ad').value=socialExport().voice_ad;$('confirmed').checked=false;toast('Voice script applied. Review the listing again before playback.');};
+
+$('socialIncludePrice').onchange=()=>{if($('socialIncludePrice').checked&&(!$('priceApproved').checked||!priceValid())){$('socialIncludePrice').checked=false;toast('Approve a valid seller price first.');}socialDirty=true;$('socialApproved').checked=false;$('confirmed').checked=false;updateInstagramPreview();};
+$('downloadCreative').onclick=()=>{if(!shareReady())return;if(!currentFile){toast('No product image is available. Upload a photo first.');return}try{const url=URL.createObjectURL(currentFile);const a=document.createElement('a');a.href=url;a.download=currentFile.name||'product-photo.jpg';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Image download requested. Check your browser downloads.');}catch{toast('Image download could not start. Your draft is unchanged.');}};
+$('postInstagram').onclick=async()=>{if(!shareReady())return;$('postInstagram').disabled=true;$('instagramStatus').textContent='Checking publishing availability…';try{const r=await fetch('/api/instagram/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({approved:true})});const result=await r.json();$('instagramStatus').textContent=result.error?.message||'Publishing was not confirmed. Your draft remains available.';}catch{$('instagramStatus').textContent='Publishing unavailable. Use copy, image download, draft export or WhatsApp.'}finally{$('postInstagram').disabled=false}};
