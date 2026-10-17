@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createVoiceSynth, maxTextLength } from '../server/sarvam.js';
-import { createApp } from '../server/app.js';
+import { createApp } from './verified-app-fixture.js';
 import { getConfig } from '../server/config.js';
 const config = { ...getConfig({ SARVAM_API_KEY: 'test-placeholder-key' }), timeoutMs: 1000 };
 test('Sarvam adapter sends the documented REST request shape and decodes audio', async () => {

@@ -15,9 +15,8 @@ import { createMarketing } from './marketing.js';
 import { createPricing } from './pricing.js';
 import { createVoiceSynth } from './sarvam.js';
 const root = fileURLToPath(new URL('../', import.meta.url));
-export function createApp({ config, analyze = createAnalyzer(config), priceProduct = createPricing(config), marketProduct = createMarketing(config), synthesizeVoice = createVoiceSynth(config) }) {
+export function createApp({ config, analyze = createAnalyzer(config), priceProduct = createPricing(config), marketProduct = createMarketing(config), synthesizeVoice = createVoiceSynth(config), accounts = sellerConfig(), sellerClientFactory }) {
   const app = express();
-  const accounts=sellerConfig();
   app.disable('x-powered-by');
   app.use((req, res, next) => {
     res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store',
@@ -36,7 +35,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
     }
     next();
   });
-  installSellers(app,{settings:accounts});
+  installSellers(app,{settings:accounts,clientFactory:sellerClientFactory});
   const limiter = rateLimit({ windowMs: 60000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false,
     message: { error: { code: 'RATE_LIMITED', message: 'Too many requests. Wait a minute or use a sample draft.' } } });
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.maxUploadBytes, files: 1, fields: 2, fieldSize: 10000, parts: 3 } });

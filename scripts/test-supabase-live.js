@@ -6,6 +6,7 @@ if(!config.configured||required.some(k=>!process.env[k])){console.log('NOT RUN: 
  try{
  const users=[];for(const [i,name]of ['A','B'].entries()){const {data,error}=await clients[i].auth.signInWithPassword({email:process.env['TEST_SELLER_'+name+'_EMAIL'],password:process.env['TEST_SELLER_'+name+'_PASSWORD']});assert.equal(Boolean(error),false,'Test-account sign-in failed');users.push(data.user)}
  assert.notEqual(users[0].id,users[1].id,'Two different accounts required');owner=users[0].id;
+ for(const db of clients){const access=await db.rpc('has_verified_business');assert.equal(Boolean(access.error),false,'Apply migration 202610170003 first');assert.equal(access.data,true,'This positive isolation test requires genuinely verified disposable sellers; do not fabricate verification records.')}
  const snapshot={version:2,fields:{title:{value:'TEST ONLY — isolation check'},price:{value:'1000'},priceApproved:{checked:true},confirmed:{checked:true}}};
  let result=await clients[0].from('products').insert({id,seller_id:owner,title:'TEST ONLY — isolation check',snapshot}).select();assert.equal(Boolean(result.error),false,'Owner insert failed');created=true;
  result=await clients[0].from('products').select('snapshot').eq('id',id).single();assert.equal(result.data?.snapshot.fields.priceApproved.checked,true,'Approval restore failed');

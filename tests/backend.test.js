@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
-import { createApp } from '../server/app.js';
+import { createApp } from './verified-app-fixture.js';
 import { getConfig } from '../server/config.js';
 import { validateAnalysis } from '../server/validate-analysis.js';
 import { createAnalyzer } from '../server/gemini.js';

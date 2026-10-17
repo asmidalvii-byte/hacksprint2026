@@ -10,6 +10,7 @@ export function safeBusinessDetails(input={}){
  if(input.consent!==true)throw Error('Verification consent is required');
  if(value.gstin&&!gstFormatValid(value.gstin))throw Error('Check the GSTIN format');
  if(value.udyam_number&&!udyamFormatValid(value.udyam_number))throw Error('Check the Udyam number format');
+ value.consent=true;
  return value;
 }
 export function providerResult(result,{kind}){
@@ -27,4 +28,14 @@ export async function requestVerification({kind,consent,details},authorizedAdapt
  if(result.status==='verified'&&(!result.reference||!result.checkedAt))throw Error('Missing authoritative verification evidence');
  if(kind==='gst'&&result.status==='verified'&&(result.registrationStatus!=='active'||result.nameMatch!==true))return {status:'action_required',reason:'Registration status or business-name match requires review.'};
  return {kind,status:result.status,provider_reference:result.reference||null,verified_at:result.status==='verified'?result.checkedAt:null,masked_identifier:result.maskedIdentifier||null};
+}
+
+// Overall approval and registration evidence are distinct, trusted records.
+export function businessAccess(records,now=Date.now()) {
+ const business=Array.isArray(records)?records.find(r=>r.kind==='business'):null;
+ const current=r=>r?.status==='verified' && typeof r.provider_reference==='string' && r.provider_reference.trim().length>0 && Number.isFinite(Date.parse(r.verified_at)) && Date.parse(r.verified_at)<=now && (r.expires_at==null || Date.parse(r.expires_at)>now);
+ if(current(business)&&records.some(r=>['udyam','gst'].includes(r.kind)&&current(r)))return {allowed:true,business_status:'verified',next_action:'enter_dashboard'};
+ const actions={not_started:'start_verification',in_progress:'continue_verification',pending_review:'wait_for_review',pending:'wait_for_review',action_required:'correct_information',rejected:'contact_support',failed:'retry_verification',setup_required:'provider_setup',not_applicable:'contact_support',expired:'renew_verification'};
+ const status=business?.status==='verified'?'action_required':Object.hasOwn(actions,business?.status)?business.status:'not_started';
+ return {allowed:false,code:'BUSINESS_VERIFICATION_REQUIRED',business_status:status,next_action:actions[status],message:status==='action_required'?'Current authoritative business and Udyam or GST verification are required.':`Business verification status: ${status}.`};
 }

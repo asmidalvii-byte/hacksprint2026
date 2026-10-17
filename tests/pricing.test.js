@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import '../shared/pricing.js';
 import {createPricing,validatePricing} from '../server/pricing.js';
-import {createApp} from '../server/app.js';
+import {createApp} from './verified-app-fixture.js';
 const {estimate,accept,marketing}=globalThis.DukaanPricing;
 const now=new Date('2026-10-17T00:00:00Z');
 const facts={currency:'INR',market:'India',location:'Mumbai',sales_channel:'shop',category:'saree',subcategory:'cotton saree',material:'cotton',dimensions:'6 m',workmanship:'machine woven',accessories:'none',condition:'New'};
