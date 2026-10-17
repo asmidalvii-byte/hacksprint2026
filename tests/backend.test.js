@@ -88,6 +88,11 @@ test('server exposes only frontend assets and rejects cross-origin requests', as
   assert.equal((await fetch(url)).status, 200);
   assert.equal((await post(imageForm(), { Origin: 'https://untrusted.example' })).status, 403);
 });
+test('CSP permits playing a data-URI audio clip (Sarvam playback), not just images', async t => {
+  const { url } = await serve(t);
+  const csp = (await fetch(url)).headers.get('content-security-policy');
+  assert.match(csp, /media-src[^;]*\bdata:/);
+});
 test('config reports missing values without pretending credentials work', () => {
   assert.equal(getConfig({ AI_ENABLED: 'true' }).configured, false);
   assert.equal(getConfig({}).enabled, false);

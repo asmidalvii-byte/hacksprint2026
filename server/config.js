@@ -17,6 +17,8 @@ export function getConfig(env = process.env) {
     provider, enabled, missing, configured: enabled && missing.length === 0,
     model: env.GEMINI_MODEL, project: env.GOOGLE_CLOUD_PROJECT,
     location: env.GOOGLE_CLOUD_LOCATION, apiKey: env.GEMINI_API_KEY,
+    sarvamApiKey: env.SARVAM_API_KEY || '', sarvamModel: env.SARVAM_MODEL || 'bulbul:v3',
+    sarvamConfigured: Boolean(env.SARVAM_API_KEY),
     timeoutMs: number('AI_TIMEOUT_MS', 30000, 120000),
     maxUploadBytes: number('MAX_UPLOAD_BYTES', 10485760, 10485760),
     port: number('PORT', 3000, 65535), host: env.HOST || '127.0.0.1'
