@@ -16,7 +16,7 @@ function saveDraft(){
   $('draftSaveStatus').textContent=(account?.configured?'Saved to your account at ':'Saved on this device at ')+new Date(snapshot.savedAt).toLocaleTimeString();return true;
  }).catch(()=>{$('draftSaveStatus').textContent='Saving failed. Your edits remain in this tab. Retry before closing.';return false});return draftSaveChain;
 }
-function scheduleDraftSave(event){if(event?.target?.id&&/^(account_|verification_)/.test(event.target.id))return;draftInteracted=true;clearTimeout(draftSaveTimer);draftSaveTimer=setTimeout(()=>void saveDraft(),500)}
+function scheduleDraftSave(event){if(event?.target?.id==='approvePrice')return;if(event?.target?.id&&/^(account_|verification_)/.test(event.target.id))return;draftInteracted=true;clearTimeout(draftSaveTimer);draftSaveTimer=setTimeout(()=>void saveDraft(),500)}
 $('saveDraft').onclick=()=>void saveDraft();document.addEventListener('input',scheduleDraftSave);document.addEventListener('change',scheduleDraftSave);document.addEventListener('click',scheduleDraftSave);
 function applySavedDraft(saved){
  for(const el of draftControls()){const value=saved.fields?.[el.id];if(value){el.value=value.value;el.checked=Boolean(value.checked)}}

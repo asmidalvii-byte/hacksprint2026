@@ -1,3 +1,8 @@
+function renderReadableDetails(value){
+ const box=document.createElement('div');
+ function visit(v,label){if(v===null||v===undefined)return;if(Array.isArray(v)){for(const item of v)visit(item,label);return}if(typeof v==='object'){for(const [k,item]of Object.entries(v))visit(item,[label,k.replaceAll('_',' ')].filter(Boolean).join(' · '));return}box.append(textElement('p',(label?label+': ':'')+String(v)))}
+ visit(value,'');return box;
+}
 let socialDraft=null,socialSequence=0,socialController=null,socialDirty=false,socialContextStale=false;
 const socialFields=['instagram_caption','hashtags','marketplace_description','whatsapp_message','voice_ad','alternative_captions'];
 function invalidateSocial(){socialSequence++;socialController?.abort();socialController=null;socialDraft=null;socialDirty=false;socialContextStale=false;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;$('socialPanel').hidden=true;$('generateSocial').disabled=false;}
@@ -12,7 +17,7 @@ function renderIntelligence(){
  for(const h of hypotheses)box.append(textElement('p',h));
  for(const q of data.seller_questions)box.append(textElement('p',q.priority+': '+q.question));
  for(const [key,value]of Object.entries(data)){
-  const details=document.createElement('details');details.append(textElement('summary',key.replaceAll('_',' ')),textElement('pre',JSON.stringify(value,null,2)));box.append(details);
+  const details=document.createElement('details');details.append(textElement('summary',key.replaceAll('_',' ')),renderReadableDetails(value));box.append(details);
  }
 }
 $('generateSocial').onclick=async()=>{
@@ -56,7 +61,7 @@ async function refreshIntegrationStatus(){
  const labels={INSTAGRAM_ACCOUNT_ID:'Instagram professional account ID',INSTAGRAM_ACCESS_TOKEN:'Authorized Instagram access token',INSTAGRAM_API_VERSION:'Supported Meta API version'};
  const lines=[...status.instagram.missing.map(k=>'Missing: '+(labels[k]||k)), 'Required: a Business or Creator account, Meta app authorization and content-publishing permissions.', 'Remaining implementation: authorized media hosting and an official publishing adapter with confirmed publication responses.', 'Configuration presence alone does not prove account access or publishing permission.'];
  $('instagramSetupDetails').replaceChildren(...lines.map(line=>textElement('p',line)));
- $('cloudStatus').textContent=`Gemini route: ${status.gemini.provider}. Cloud Storage: ${status.storage.state}. BigQuery: ${status.bigquery.state}. Vertex AI: ${status.vertex.state}. Sarvam voice: ${status.sarvam?.state||'setup_required'}.`;
+ $('cloudStatus').textContent=`Gemini route: ${status.gemini.provider}. Cloud Storage: ${status.storage.state}. Seller storage: ${status.supabase?.state||'setup_required'}. Vertex AI: ${status.vertex.state}. Sarvam voice: ${status.sarvam?.state||'setup_required'}.`;
  }catch{$('instagramStatus').textContent='Connection status unavailable. Draft editing, downloads and exports remain available.';}finally{$('refreshInstagramStatus').disabled=false}
 }
 $('refreshInstagramStatus').onclick=refreshIntegrationStatus;

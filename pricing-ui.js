@@ -7,15 +7,15 @@ function invalidatePricing(){if(typeof markSocialContextChanged==='function')mar
 function resetPricing(){invalidatePricing();$('priceApproved').checked=false;for(const k of pricingInputs)if(!['currency','market'].includes(k))$('p_'+k).value='';$('originalPrice').value='';$('discountPercent').value='';$('positioning').value='unclassified';}
 function pricingExport(){const p=pricingResult||DukaanPricing.estimate(pricingInput());return {...p,seller_confirmed_price:$('priceApproved').checked&&priceValid()?Number($('price').value):null,seller_approval_status:$('priceApproved').checked&&priceValid()?'approved':p.seller_approval_status}}
 function renderPricing(){
- renderPricingContext();const p=pricingResult;const box=$('pricingResult');box.replaceChildren();for(const line of [
- ...(p.estimated_typical===null?['Market comparison unavailable — no sufficient verified comparable records.']:[]),
- ...(p.cost_based_price!==null?[`${p.currency} ${p.seller_cost} ÷ (1 − ${p.seller_target_margin}% / 100) = ${p.currency} ${p.cost_based_price.toFixed(2)}. Gross margin, not markup.`]:[]),
- 'Pricing assistance · '+p.recommendation_basis.replaceAll('_',' '),
- `Market range (${p.currency}): low ${p.estimated_low??'unknown'} · typical ${p.estimated_typical??'unknown'} · high ${p.estimated_high??'unknown'}`,
- `Recommendation: ${p.recommended_selling_price==null?'none — more evidence needed':p.currency+' '+p.recommended_selling_price.toFixed(2)}`,
- `Confidence: ${p.confidence.level}. ${p.confidence.explanation}`,`AI: ${p.ai_status}`,`Estimated: ${p.estimation_timestamp}`,
- ...p.pricing_factors.map(x=>'Factor: '+x),...p.assumptions.map(x=>'Method/assumption: '+x),...p.missing_information.map(x=>'Missing: '+x),...p.evidence_sources.map(x=>'Asking-price source: '+x.url+' · observed '+x.observed_at)
-])box.append(textElement('p',line));}
+ renderPricingContext();const p=pricingResult,box=$('pricingResult');box.replaceChildren();
+ box.append(textElement('h3',p.recommended_selling_price==null?'More information needed':`Suggested selling price: ${p.currency} ${p.recommended_selling_price.toFixed(2)}`));
+ box.append(textElement('p',p.cost_based_price!==null?`Cost ${p.currency} ${p.seller_cost} ÷ (1 − ${p.seller_target_margin}% gross margin). This is a cost calculation, not a verified market price.`:'No cost-based suggestion yet. Enter your total unit cost and target gross margin.'));
+ if(p.estimated_typical!==null)box.append(textElement('p',`Comparable asking prices: ${p.currency} ${p.estimated_low}–${p.estimated_high}; typical ${p.estimated_typical}. These are not confirmed sales.`));
+ else box.append(textElement('p','No verified market-price range is available.'));
+ const details=document.createElement('details');details.append(textElement('summary','Factors, assumptions and missing information'));
+ for(const line of [`Confidence: ${p.confidence.level}. ${p.confidence.explanation}`,...p.pricing_factors,...p.assumptions,...p.missing_information,...p.evidence_sources.map(x=>x.url+' · observed '+x.observed_at)])details.append(textElement('p',line));box.append(details);
+}
+function renderPricedMarketing(){if(!marketingResult)return;const m=marketingResult;$('marketingResult').textContent=['English price template — select your marketing language in the sharing studio for translated copy.',m.caption,m.whatsapp,m.positioning_basis,...(m.promotion?[`Proposed promotion: ${$('p_currency').value} ${m.promotion.calculated_price}. Calculation only; not applied to your selling price.`]:[])].join('\n\n')}
 $('calculatePricing').onclick=async()=>{
  if(pricingController)return;
  let input;try{input=pricingInput();DukaanPricing.estimate(input)}catch(e){toast(e.message);return}
@@ -32,7 +32,7 @@ $('p_use_ai').addEventListener('change',invalidatePricing);
 $('price').addEventListener('input',()=>{$('priceApproved').checked=false;if(pricingResult)pricingResult.seller_approval_status='pending';clearMarketing()});
 for(const k of ['title','description','positioning','originalPrice','discountPercent'])$(k).addEventListener('input',()=>{clearMarketing()});
 $('priceApproved').onchange=()=>{if($('priceApproved').checked&&!priceValid()){$('priceApproved').checked=false;toast('Enter a valid seller price first.');}clearMarketing();makeAd();toast($('priceApproved').checked?'Selling price approved. Continue to marketing.':'Selling price needs approval.')};
-$('generateMarketing').onclick=()=>{try{marketingResult=DukaanPricing.marketing({title:$('title').value,description:$('description').value,price:priceValid()?Number($('price').value):null,currency:$('p_currency').value,approved:$('priceApproved').checked,positioning:$('positioning').value,pricing:pricingResult,customer:$('p_target_customer').value,original:$('originalPrice').value===''?null:Number($('originalPrice').value),discount:$('discountPercent').value===''?null:Number($('discountPercent').value)});$('marketingResult').textContent=JSON.stringify(marketingResult,null,2)}catch(e){toast(e.message)}};
+$('generateMarketing').onclick=()=>{try{marketingResult=DukaanPricing.marketing({title:$('title').value,description:$('description').value,price:priceValid()?Number($('price').value):null,currency:$('p_currency').value,approved:$('priceApproved').checked,positioning:$('positioning').value,pricing:pricingResult,customer:$('p_target_customer').value,original:$('originalPrice').value===''?null:Number($('originalPrice').value),discount:$('discountPercent').value===''?null:Number($('discountPercent').value)});renderPricedMarketing()}catch(e){toast(e.message)}};
 let lastCurrency=$('p_currency').value;
 $('p_currency').addEventListener('change',()=>{if($('price').value!==''){$('p_currency').value=lastCurrency;toast('Clear the seller price before changing its currency.');return}lastCurrency=$('p_currency').value;$('currencyLabel').textContent=$('p_currency').value;$('includePrice').checked=false;makeAd();toast('Currency changed without conversion. Review your entered amount.');});
 

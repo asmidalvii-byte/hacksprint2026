@@ -1,4 +1,8 @@
-# DukaanScan AI — HackSprint PS42
+# Kriti
+
+Seller-reviewed product intelligence, pricing and marketing. Start with [current Kriti setup and verification instructions](docs/KRITI-SETUP.md). Earlier milestone reports below describe historical integration states; the current setup guide takes precedence.
+
+# Kriti — HackSprint PS42
 
 Existing merchant studio extended with a secure Gemini backend, structured image-analysis suggestions, evidence, uncertainty and missing-field review. Merchant pricing, five regional ad templates, device voice and JSON export remain available.
 

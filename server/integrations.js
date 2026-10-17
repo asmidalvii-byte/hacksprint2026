@@ -3,6 +3,7 @@ export function integrationStatus(env=process.env){
  const required=keys=>keys.filter(key=>!env[key]);
  const instagramMissing=required(['INSTAGRAM_ACCOUNT_ID','INSTAGRAM_ACCESS_TOKEN','INSTAGRAM_API_VERSION']);
  return {
+  supabase:{state:env.SUPABASE_URL&&(env.SUPABASE_PUBLISHABLE_KEY||env.SUPABASE_ANON_KEY)?'configured_requires_live_verification':'setup_required'},
   gemini:{provider:env.GEMINI_PROVIDER||'vertex',verification:'not_probed_by_status_endpoint'},
   instagram:{state:'setup_required',missing:instagramMissing,message:'Instagram publishing setup required. Official account authorization and a verified publishing adapter are not connected. Use Copy Caption, Download Creative, Export Draft or WhatsApp. No post has been sent.'},
   storage:{state:'not_connected',missing:required(['GOOGLE_CLOUD_PROJECT','GCS_BUCKET']),verification:'No storage adapter or live upload configured.'},

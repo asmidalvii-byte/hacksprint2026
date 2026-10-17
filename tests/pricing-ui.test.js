@@ -4,7 +4,7 @@ import Ajv from 'ajv';import {catalogIntelligenceSchema} from '../shared/catalog
 import {test} from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';import {readFileSync} from 'node:fs';
 function setup(){
  const elements=new Map();const $=id=>{if(!elements.has(id))elements.set(id,{id,type:id==='file'?'file':'text',value:'',checked:false,validity:{valid:true},listeners:{},addEventListener(type,fn){(this.listeners[type]??=[]).push(fn)},replaceChildren(){},append(){},dispatch(type){for(const fn of this.listeners[type]||[])fn();this['on'+type]?.()},querySelectorAll(){return []}});return elements.get(id)};
- const context=vm.createContext({document:{getElementById:$,createElement:()=>({}),querySelectorAll:()=>[...elements.values()],addEventListener(){}},window:{addEventListener(){}},navigator:{},URL,Blob,AbortController,setTimeout,clearTimeout,console,fetch:async url=>url==='/api/status'?{ok:true,json:async()=>({configured:false})}:{ok:true,json:async()=>context.DukaanPricing.estimate({seller_cost:800,seller_target_margin:20})}});
+ const context=vm.createContext({document:{getElementById:$,createElement:()=>({append(){},replaceChildren(){}}),querySelectorAll:()=>[...elements.values()],addEventListener(){}},window:{addEventListener(){}},navigator:{},URL,Blob,AbortController,setTimeout,clearTimeout,console,fetch:async url=>url==='/api/status'?{ok:true,json:async()=>({configured:false})}:{ok:true,json:async()=>context.DukaanPricing.estimate({seller_cost:800,seller_target_margin:20})}});
  for(const file of ['shared/pricing.js','app.js','pricing-ui.js','intelligence-ui.js'])vm.runInContext(readFileSync(new URL('../'+file,import.meta.url),'utf8'),context);
  $('confirmed');$('p_currency').value='INR';$('category').value='saree';$('language').value='hi';$('p_market').value='India';$('title').value='Seller title';$('description').value='Reviewed details';return {$,context,run:code=>vm.runInContext(code,context)};
 }
@@ -49,4 +49,13 @@ test('English fallback keeps the selected language and duplicate generation is i
 });
 test('fresh cost advice does not revoke approval for an unchanged seller amount',async()=>{
  const {$}=setup();$('confirmed').checked=true;$('price').value='1250';$('priceApproved').checked=true;await $('calculatePricing').onclick();assert.equal($('price').value,'1250');assert.equal($('priceApproved').checked,true);assert.equal($('confirmed').checked,true);
+});
+
+test('price approval waits for durable save and rolls back on failure without losing amount',async()=>{
+ const {$,context,run}=setup();$('price').value='1000';$('confirmed').checked=true;let resolve;
+ context.saveDraft=()=>new Promise(r=>resolve=r);context.draftSaveTimer=null;
+ vm.runInContext(readFileSync(new URL('../workflow-ui.js',import.meta.url),'utf8'),context);
+ const task=$('approvePrice').onclick();run('updateWorkflow()');assert.equal($('reportContinue').disabled,true);assert.match($('priceApprovalStatus').textContent,/Saving/);
+ resolve(false);await task;assert.equal($('priceApproved').checked,false);assert.equal($('price').value,'1000');assert.equal($('confirmed').checked,true);assert.equal($('reportContinue').disabled,true);
+ context.saveDraft=async()=>true;await $('approvePrice').onclick();assert.equal($('priceApproved').checked,true);assert.equal($('reportContinue').disabled,false);
 });

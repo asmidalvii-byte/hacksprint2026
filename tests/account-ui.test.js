@@ -20,3 +20,5 @@ test('reset network exception is actionable and success does not claim email del
  const {el,auth}=await setup();auth.resetPasswordForEmail=async()=>{throw {name:'AuthRetryableFetchError',message:'secret'}};await el('account_reset').onclick();assert.match(el('account_status').textContent,/connection/);assert.equal(el('account_reset').disabled,false);
  auth.resetPasswordForEmail=async()=>({error:null});await el('account_reset').onclick();assert.match(el('account_status').textContent,/If the account is eligible/);
 });
+
+test('failed saving blocks logout and retains session (mock)',async()=>{const {el,auth,context}=await setup();let calls=0;auth.signOut=async()=>{calls++;return {error:null}};context.saveDraft=async()=>false;await el('account_logout').onclick();assert.equal(calls,0);assert.match(el('account_status').textContent,/saving failed/);context.saveDraft=async()=>true;await el('account_logout').onclick();assert.equal(calls,1)});

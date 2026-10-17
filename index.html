@@ -80,14 +80,14 @@
       <strong id="uploadLabel" data-i18n="dropLabel">Drop your product photo here</strong>
       <span id="uploadHelp" data-i18n="dropHelp">or click to browse · JPG, PNG, WebP · up to 10 MB</span>
     </button>
-    <p class="privacy" data-i18n="privacyNote">Photos stay on this device. AI analysis sends them only to Google, never stored.</p>
+    <p class="privacy">Analysis sends your photo to Google. Signed-in drafts and photos save privately to your Supabase account; device-demo drafts stay in this browser.</p>
 
     <label for="category" data-i18n="category">Category</label>
     <select id="category">
       <option value="saree" data-i18n="catSaree">Saree &amp; textiles</option>
-      
-      
-      
+
+
+
     </select>
     <label for="notes"><span data-i18n="notes">Notes (optional)</span></label>
     <textarea id="notes" maxlength="4000" rows="2" data-i18n-placeholder="notesHelp" placeholder="Known facts, label text or details to check"></textarea>
@@ -172,7 +172,7 @@
         <audio id="reportAudio" controls hidden></audio>
         <div class="price-box">
           <div>
-            <label for="price"><span data-i18n="price">Price</span> <span data-i18n="optionalTag">Optional</span></label>
+            <label for="price"><span data-i18n="price">Price</span> <span>Required to sell</span></label>
             <div class="price-input">
               <span id="currencyLabel">INR</span>
               <input id="price" type="number" min="0.01" max="10000000" step="0.01" data-i18n-placeholder="addPrice" placeholder="Enter your price">
@@ -285,8 +285,8 @@
       <p id="socialGenerationStatus" role="status"></p>
       <button type="button" class="secondary wide" id="generateSocial" data-i18n="generateDraftsBtn">Generate Instagram &amp; sharing drafts</button>
       <p id="draftSaveStatus" role="status" data-i18n="draftSavingInit">Draft saving initializes on this device.</p>
-      <button id="saveDraft" type="button" class="secondary" data-i18n="saveDraftBtn">Save draft on this device</button>
-      <p class="muted" data-i18n="draftSavedNote">Saved on this device automatically.</p>
+      <button id="saveDraft" type="button" class="secondary" >Save draft</button>
+
       <p id="instagramStatus" role="status" data-i18n="instagramSetupRequired">Instagram publishing setup required.</p>
       <details>
         <summary data-i18n="instagramConnectionSummary">Instagram connection &amp; setup</summary>
@@ -333,7 +333,7 @@
       <audio id="sarvamAudio" controls hidden></audio>
       <p class="audio-note" data-i18n="audioNoteText">Device voice is free. Sarvam gives a real voice.</p>
       <div class="voice-status" id="voiceStatus" role="status"></div>
-      <div class="powered"><span data-i18n="integrationStatusLabel">INTEGRATION STATUS</span><b data-i18n="geminiDeviceLabel">Gemini backend · Device voice</b><small data-i18n="storageNote">Storage and BigQuery not configured</small></div>
+      <div class="powered"><span data-i18n="integrationStatusLabel">INTEGRATION STATUS</span><b data-i18n="geminiDeviceLabel">Gemini backend · Device voice</b><small>Account storage uses Supabase when configured.</small></div>
     </section>
   </div>
 </section>

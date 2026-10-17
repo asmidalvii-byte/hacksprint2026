@@ -32,7 +32,7 @@ test('Sarvam adapter enforces the configured model\'s own text limit, not a fixe
 });
 test('Sarvam adapter rejects unsupported languages and oversize or empty text before calling the API', async () => {
   const synth = createVoiceSynth(config, async () => { throw new Error('must not call the network'); });
-  await assert.rejects(synth({ text: 'hi', language: 'en' }));
+  await assert.rejects(synth({ text: 'hi', language: 'fr' }));
   await assert.rejects(synth({ text: '', language: 'hi' }));
   await assert.rejects(synth({ text: 'x'.repeat(2501), language: 'hi' }));
 });
@@ -77,3 +77,5 @@ test('Sarvam upstream errors are sanitized like other AI errors', async t => {
   assert.equal(response.status, 503);
   assert.ok(!text.includes('secret-upstream-detail'));
 });
+
+test('English Sarvam uses en-IN without silently changing language (mock)',async()=>{let language;const synth=createVoiceSynth(config,async(_url,init)=>{language=JSON.parse(init.body).language_code;return {ok:true,json:async()=>({audios:['QUJD']})}});await synth({text:'Reviewed English script',language:'en'});assert.equal(language,'en-IN')});

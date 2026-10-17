@@ -91,7 +91,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
   });
   app.post('/api/voice-ad', limiter, express.json({limit:'8kb'}), async (req,res,next) => {
     const input = req.body;
-    if (!input || Array.isArray(input) || Object.keys(input).some(k => !['text','language','reviewed'].includes(k)) || input.reviewed !== true || typeof input.text !== 'string' || !input.text.trim() || input.text.length > 2500 || !['hi','ta','te','kn','bn'].includes(input.language)) return res.status(400).json({ error: { message: 'Review the ad script and choose a supported language first.' } });
+    if (!input || Array.isArray(input) || Object.keys(input).some(k => !['text','language','reviewed'].includes(k)) || input.reviewed !== true || typeof input.text !== 'string' || !input.text.trim() || input.text.length > 2500 || !['en','hi','ta','te','kn','bn'].includes(input.language)) return res.status(400).json({ error: { message: 'Review the ad script and choose a supported language first.' } });
     if (!config.sarvamConfigured) return res.status(503).json({ error: { code: 'SARVAM_SETUP_REQUIRED', message: integrationStatus().sarvam.message } });
     if (active >= 2) return res.status(503).json({ error: { message: 'Service busy. Try again.' } });
     active++;
