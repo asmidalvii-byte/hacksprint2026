@@ -5,6 +5,13 @@ import {once} from 'node:events';
 import {testAccountConfig,hasTestAccountAccess} from '../server/test-account-access.js';
 import {installSellers} from '../server/sellers.js';
 const env={KRITI_TEST_ACCOUNT_ACCESS:'true',TEST_SELLER_A_EMAIL:'a@example.test',TEST_SELLER_B_EMAIL:'b@example.test'};
+test('all-account local demo accepts any authenticated user without business or email allowlist checks',()=>{
+ const config=testAccountConfig({KRITI_DEMO_ALL_ACCOUNTS:'true'});
+ assert.equal(hasTestAccountAccess({id:'ordinary-user'},'127.0.0.1',config),true);
+ assert.equal(hasTestAccountAccess(null,'127.0.0.1',config),false);
+ assert.equal(hasTestAccountAccess({id:'ordinary-user'},'192.0.2.1',config),false);
+ assert.equal(hasTestAccountAccess({id:'ordinary-user'},'127.0.0.1',testAccountConfig({KRITI_DEMO_ALL_ACCOUNTS:'true',NODE_ENV:'production'})),false);
+});
 test('test access requires explicit local configuration and confirmed authenticated email',()=>{
  const user={email:'A@example.test',email_confirmed_at:'2026-01-01'};
  assert.equal(hasTestAccountAccess(user,'127.0.0.1',testAccountConfig(env)),true);

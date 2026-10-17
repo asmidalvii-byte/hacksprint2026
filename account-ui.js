@@ -86,7 +86,7 @@ window.KritiAccount.ready=(async()=>{
     document.getElementById('workspace').hidden=!account.accessAllowed;document.getElementById('account_products').hidden=!account.accessAllowed||account.demoAccess;
     const notice=document.getElementById('account_test_notice');notice.hidden=!account.demoAccess;notice.textContent=account.demoAccess?demo.notice:'';
     document.getElementById('account_intro').textContent=account.demoAccess?'Your test workspace is ready. Registration verification is still a separate step.':'Business approval is required to open your seller workspace.';
-    message.textContent=account.demoAccess?'Test account — business not verified':account.accessAllowed?'Signed in as '+account.user.email:result?'Signed in. Business approval is still required. Sample checks do not grant access.':'Signed in, but business approval could not be confirmed. Refresh your status to retry.';
+    message.textContent=account.demoAccess?'Demo access — business not verified':account.accessAllowed?'Signed in as '+account.user.email:result?'Signed in. Business approval is still required. Sample checks do not grant access.':'Signed in, but business approval could not be confirmed. Refresh your status to retry.';
    });
   };
   account.refreshAccess=async()=>{const {data:{session}}=await account.client.auth.getSession();apply(session)};

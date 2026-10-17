@@ -1,5 +1,7 @@
 # Confirmed test account demo access
 
+Temporary all-account mode: `KRITI_DEMO_ALL_ACCOUNTS=true` lets any successfully authenticated Supabase user open the local workspace regardless of GSTIN/Udyam verification. The same production and loopback restrictions apply. Normal Supabase sign-in rules still apply. Set the flag to false and restart to restore the allowlist. This mode does not mark business records verified, change signup requirements or unlock cloud storage/publishing. The UI displays “Demo access — business not verified.”
+
 Set `KRITI_TEST_ACCOUNT_ACCESS=true` locally. Only confirmed Supabase email addresses matching `TEST_SELLER_A_EMAIL` or `TEST_SELLER_B_EMAIL` qualify, after the server validates their session with Supabase. Never send passwords or tokens in chat. No email allowlist is sent to the browser.
 
 The switch is disabled with NODE_ENV=production or a non-loopback HOST. Requests must originate from a loopback socket. Keep this developer server local; do not expose it through a public reverse proxy or tunnel.
