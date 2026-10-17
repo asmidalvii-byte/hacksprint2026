@@ -8,6 +8,7 @@ Supabase authentication preserves the session. Every protected API request separ
 Changes to business details invalidate business/Udyam/GST approvals through a database trigger, including direct Supabase writes. Consent is now persisted. Product and private product-image access additionally requires this same rule in restrictive RLS policies AND the existing owner policies. Existing signed image URLs can remain usable until their original expiry; this migration does not revoke already issued URLs or downloaded files.
 
 ## Responses and frontend behavior
+- `GET /api/demo/verification` is a public, read-only demonstration response. It is marked `demo: true`, `authoritative: false`, uses `method: sample`, and always returns `access_allowed: false`. It must never be used as a login decision or written to Supabase. This is the route to use for a HackSprint walkthrough when no provider is available.
 - Invalid/missing session: 401. Use login.
 - Authenticated but unverified: 403 JSON `{ "allowed": false, "code": "BUSINESS_VERIFICATION_REQUIRED", "business_status": "pending_review", "next_action": "wait_for_review", "message": "Business verification status: pending_review." }` (actual status varies).
 - Database lookup failure: 503 `BUSINESS_VERIFICATION_UNAVAILABLE`, null status, `retry_status`.

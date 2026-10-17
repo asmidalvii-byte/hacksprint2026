@@ -1,5 +1,7 @@
 # Kriti verification API
 
+Sandbox.co.in **test** lookup is implemented separately at `POST /api/seller/verification/gst/sandbox`. See [GST-SANDBOX.md](GST-SANDBOX.md) for credentials, the live test command and Claude's response contract. Test results do not update authoritative verification or grant access. Production routes below still require provider setup.
+
 All routes require `Authorization: Bearer <Supabase access token>`. The backend resolves the seller with `auth.getUser`; client supplied seller IDs are ignored.
 
 - `GET /api/seller/verification` returns separate business, Udyam, GST, identity and authority statuses plus next action.

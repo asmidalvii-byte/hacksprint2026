@@ -1,5 +1,7 @@
 import {createClient} from '@supabase/supabase-js';
 import express from 'express';
+import rateLimit from 'express-rate-limit';
+import {createGstSandbox} from './gst-sandbox.js';
 import {safeBusinessDetails, udyamFormatValid, gstFormatValid, providerResult, businessAccess} from './verification.js';
 export function sellerConfig(env=process.env){
  const url=env.SUPABASE_URL||'',key=env.SUPABASE_PUBLISHABLE_KEY||env.SUPABASE_ANON_KEY||'';
@@ -15,15 +17,22 @@ export function validSnapshot(value){
  if(approved&&(!price||!Number.isFinite(Number(price.value))||Number(price.value)<=0||Number(price.value)>10000000))return false;
  return true;
 }
-export function installSellers(app,{settings=sellerConfig(),clientFactory=createClient}={}){
+export function installSellers(app,{settings=sellerConfig(),clientFactory=createClient,gstSandbox=createGstSandbox()}={}){
  app.get('/api/account-config',(req,res)=>res.json({configured:settings.configured,setupRequired:settings.requested&&!settings.configured,url:settings.configured?settings.url:null,key:settings.configured?settings.key:null}));
+ app.get('/api/demo/verification',(req,res)=>res.json({
+  demo:true, authoritative:false, notice:'Demonstration data only. No Udyam or GSTIN check was performed.',
+  data:{business_status:'verified',udyam_status:'verified',gst_status:'not_applicable',identity_status:'not_applicable',authority_status:'not_applicable',access_allowed:false,next_action:'use_live_verification',business:{business_name:'Sample Handloom Store',state:'Maharashtra'},records:[
+   {kind:'business',status:'verified',method:'sample',provider_reference:null,verified_at:null},
+   {kind:'udyam',status:'verified',method:'sample',provider_reference:null,verified_at:null}
+  ]}
+ }));
  const client=token=>clientFactory(settings.url,settings.key,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:`Bearer ${token}`}}});
  app.use('/api',async(req,res,next)=>{
   if(['/status','/integrations','/account-config'].includes(req.path))return next();
   if(!settings.configured)return res.status(503).json({code:'ACCOUNT_SETUP_REQUIRED',business_status:null,next_action:'configure_accounts',message:'Seller account setup required.'});
   const token=req.get('authorization')?.match(/^Bearer (.+)$/)?.[1];if(!token)return res.status(401).json({error:{message:'Sign in to continue.'}});
   try{const db=client(token),{data,error}=await db.auth.getUser(token);if(error||!data.user)return res.status(401).json({error:{message:'Session expired. Sign in again.'}});req.seller=data.user.id;req.sellerDb=db;
-   const verificationRoutes=new Set(['/verification','/seller/verification','/seller/verification/business','/seller/verification/udyam','/seller/verification/gst','/seller/verification/review','/seller/verification/retry']);
+   const verificationRoutes=new Set(['/verification','/seller/verification','/seller/verification/business','/seller/verification/udyam','/seller/verification/gst','/seller/verification/gst/sandbox','/seller/verification/review','/seller/verification/retry']);
    if(verificationRoutes.has(req.path))return next();
    const {data:records,error:verificationError}=await db.from('seller_verifications').select('kind,status,provider_reference,verified_at,expires_at').eq('seller_id',req.seller);
    if(verificationError)return res.status(503).json({code:'BUSINESS_VERIFICATION_UNAVAILABLE',business_status:null,next_action:'retry_status',message:'Business verification status cannot currently be confirmed.'});
@@ -48,6 +57,12 @@ export function installSellers(app,{settings=sellerConfig(),clientFactory=create
  const providerEndpoint=(kind,format)=>safe(async(req,res)=>{const value=String(req.body?.[kind==='udyam'?'udyam_number':'gstin']||'').trim().toUpperCase();if(!format(value))return res.status(400).json({success:false,data:null,error:{code:'INVALID_'+kind.toUpperCase()+'_FORMAT',message:'Check the '+(kind==='udyam'?'Udyam number':'GSTIN')+' format.'}});const provider=process.env[kind==='udyam'?'UDYAM_PROVIDER_URL':'GST_PROVIDER_URL'];if(!provider)return res.status(503).json({success:false,data:{status:'setup_required',next_action:'provider_setup'},error:{code:'VERIFICATION_SETUP_REQUIRED',message:'No authorized '+kind+' verification provider is configured.'}});return res.status(503).json({success:false,data:{status:'setup_required',next_action:'provider_adapter_required'},error:{code:'VERIFICATION_ADAPTER_REQUIRED',message:'The authorized provider adapter is not enabled.'}})});
  app.post('/api/seller/verification/udyam',express.json({limit:'8kb'}),providerEndpoint('udyam',udyamFormatValid));
  app.post('/api/seller/verification/gst',express.json({limit:'8kb'}),providerEndpoint('gst',gstFormatValid));
+ app.post('/api/seller/verification/gst/sandbox',rateLimit({windowMs:60000,limit:3,standardHeaders:'draft-8',legacyHeaders:false,message:{success:false,error:{code:'GST_SANDBOX_RATE_LIMITED',message:'Wait one minute before another sandbox lookup.'}}}),express.json({limit:'8kb'}),async(req,res)=>{
+  try{res.json(await gstSandbox(req.body))}catch(error){
+   const known=/^(GST_SANDBOX_[A-Z_]+|INVALID_GST_FORMAT|INVALID_GST_SANDBOX_INPUT)$/.test(error.code||'');
+   res.status(known?error.status:503).json({success:false,demo:true,authoritative:false,data:{access_allowed:false},error:{code:known?error.code:'GST_SANDBOX_UNAVAILABLE',message:known?error.message:'The GST sandbox is unavailable.'}});
+  }
+ });
  app.post('/api/seller/verification/review',(_req,res)=>res.status(503).json({success:false,data:{status:'setup_required',next_action:'manual_review_setup'},error:{code:'MANUAL_REVIEW_SETUP_REQUIRED',message:'Manual review is not configured; no review request was recorded.'}}));
  app.post('/api/seller/verification/retry',(_req,res)=>res.status(503).json({success:false,data:{status:'setup_required',next_action:'provider_setup'},error:{code:'VERIFICATION_SETUP_REQUIRED',message:'No supported verification provider is configured.'}}));
  // No documents or raw identity numbers are collected before an authorized provider exists.
