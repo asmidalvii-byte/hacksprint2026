@@ -103,3 +103,7 @@ See [textile upgrade report](docs/TEXTILE-UPGRADE.md). New vision responses incl
 See [final milestone implementation and setup report](docs/FINAL-MILESTONES.md). Drafts and uploaded photos now persist locally in IndexedDB; wait for the saved status before closing. Edits survive regeneration cancellation/failure. Download Creative uses the actual uploaded photo. Pricing accepts margins from 0% up to, but not including, 100%.
 
 Instagram publishing, Cloud Storage and BigQuery show truthful setup-required/not-connected states; they are not integrated services yet. Existing Gemini API-key analysis remains available. The report contains the demo sequence, exact missing setup and test evidence.
+
+### Instagram editor readiness
+
+See [Instagram workflow and verification report](docs/INSTAGRAM-DEMO-READINESS.md) for the current draft controls, character guidance, exact-image approval, missing publishing setup and manual browser checklist. Automated coverage is 49 passing tests; real rendered browser verification remains blocked. Real Instagram publishing is not connected.

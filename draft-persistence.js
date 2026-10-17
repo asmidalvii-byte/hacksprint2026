@@ -12,9 +12,9 @@ async function restoreDraft(){try{const saved=await draftStore.load();if(!saved|
  if(currentFile){photoURL=URL.createObjectURL(currentFile);$('preview').src=photoURL;$('preview').hidden=false;$('uploadIcon').hidden=true;$('uploadLabel').textContent=currentFile.name||'Restored product photo';}
  if(saved.ready)showEditor();if(analysis)renderAnalysis();if(pricingResult)renderPricing();if(marketingResult)$('marketingResult').textContent=JSON.stringify(marketingResult,null,2);
  $('currencyLabel').textContent=$('p_currency').value;lastCurrency=$('p_currency').value;
- $('confirmed').checked=false;$('priceApproved').checked=false;$('socialApproved').checked=false;$('socialIncludePrice').checked=false;
+ $('confirmed').checked=false;$('priceApproved').checked=false;$('socialApproved').checked=false;$('instagramFinalApproval').checked=false;$('socialIncludePrice').checked=false;
  if(socialDraft){$('socialPanel').hidden=false;$('socialSource').textContent='Restored local draft. Review text, photo and price before sharing.';updateInstagramPreview();}
  $('draftSaveStatus').textContent='Draft and photo restored from this browser. Prices and edits preserved; approvals need review.';
  }catch{$('draftSaveStatus').textContent='Draft storage unavailable. You can keep working and export JSON.';}finally{draftRestoring=false}}
 void restoreDraft();
-fetch('/api/integrations').then(r=>r.json()).then(status=>{$('instagramStatus').textContent=status.instagram.message;$('cloudStatus').textContent=`Gemini route: ${status.gemini.provider}. Cloud Storage: ${status.storage.state}. BigQuery: ${status.bigquery.state}. Vertex AI: ${status.vertex.state}.`;}).catch(()=>{$('cloudStatus').textContent='Integration status unavailable. Local drafts remain usable.';});
+void refreshIntegrationStatus();
