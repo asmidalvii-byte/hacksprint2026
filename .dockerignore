@@ -1,0 +1,13 @@
+node_modules
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+test-results
+tests
+scripts/test-live-browser.js
+docs
+*.md
+.DS_Store
+npm-debug.log
