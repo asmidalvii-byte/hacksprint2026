@@ -37,8 +37,6 @@ export interface RangoliPreloaderProps {
   progress?: number
   /** Length of the simulated load. Defaults to 6200ms. */
   durationMs?: number
-  /** Keep the closing message visible until explicitly activated. */
-  waitForInteraction?: boolean
   /** Floor and powders. Defaults to "oxide" (a red-oxide floor). */
   preset?: RangoliPreset
   /** Colour overrides, merged over the preset. */
@@ -299,7 +297,6 @@ export default function RangoliPreloader({
   loop = false,
   progress,
   durationMs = 6200,
-  waitForInteraction = false,
   preset = "oxide",
   palette,
   folds = 8,
@@ -329,8 +326,8 @@ export default function RangoliPreloader({
   const onCompleteRef = React.useRef(onComplete)
   onCompleteRef.current = onComplete
   const rushRef = React.useRef(false)
-  const optsRef = React.useRef({ colors, folds, seed, durationMs, loop, waitForInteraction })
-  optsRef.current = { colors, folds, seed, durationMs, loop, waitForInteraction }
+  const optsRef = React.useRef({ colors, folds, seed, durationMs, loop })
+  optsRef.current = { colors, folds, seed, durationMs, loop }
   const colorKey = SLOTS.map((s) => colors[s]).join("|") + "|" + colors.floor
 
   React.useEffect(() => {
@@ -338,9 +335,9 @@ export default function RangoliPreloader({
     const canvas = canvasRef.current
     if (!root || !canvas) return
     const ctx = canvas.getContext("2d")
-    if (!ctx) { setPct(100); setPhase(waitForInteraction ? "clear" : "open"); return }
+    if (!ctx) { setPhase("open"); return }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (reduced) { setPct(100); setPhase(waitForInteraction ? "clear" : "open"); return }
+    if (reduced) { setPct(100); setPhase("open"); return }
     const o = optsRef.current
 
     let w = 1
@@ -473,7 +470,7 @@ export default function RangoliPreloader({
       } else if (ph === "wind" && now - windAt > WIND_MS) {
         clearAt = now
         setLocal("clear")
-      } else if (ph === "clear" && !opts.waitForInteraction && now - clearAt > CLEAR_MS) {
+      } else if (ph === "clear" && now - clearAt > CLEAR_MS) {
         setLocal("open")
       }
 
@@ -550,10 +547,6 @@ export default function RangoliPreloader({
   }
 
   const onActivate = () => {
-    if (waitForInteraction) {
-      if (phaseRef.current === "clear") setPhase("open")
-      return
-    }
     if (phaseRef.current === "draw") rushRef.current = true
     else if (loop && (phaseRef.current === "hold" || phaseRef.current === "clear")) replay()
   }
@@ -581,11 +574,11 @@ export default function RangoliPreloader({
         <div
           className="rgp-gate"
           data-phase={loop && phase === "open" ? "clear" : phase}
-          role={waitForInteraction ? "button" : "progressbar"}
-          aria-label={waitForInteraction ? "Welcome to Kriti. Click or press Enter to continue once the welcome message appears." : label}
-          aria-valuemin={waitForInteraction ? undefined : 0}
-          aria-valuemax={waitForInteraction ? undefined : 100}
-          aria-valuenow={waitForInteraction ? undefined : pct}
+          role="progressbar"
+          aria-label={label}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={pct}
           tabIndex={0}
           onClick={onActivate}
           onKeyDown={(e) => {
@@ -610,7 +603,7 @@ export default function RangoliPreloader({
             <div className="rgp-close" aria-hidden={phase === "draw"}>
               {blessing ? <span className="rgp-blessing">{blessing}</span> : null}
               <p className="rgp-message">{message}</p>
-              {waitForInteraction ? <span className="rgp-continue">Click or tap to continue · Enter / Space</span> : loop ? <span className="rgp-replay">Click to replay</span> : null}
+              {loop ? <span className="rgp-replay">Click to replay</span> : null}
             </div>
           ) : null}
           <span className="rgp-sr" aria-live="polite">

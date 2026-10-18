@@ -28,6 +28,4 @@
 .rgp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) {
   .rgp-close, .rgp-corner { transition: none; }
-}.rgp-gate[data-phase="clear"][role="button"] { cursor: pointer; }
-.rgp-gate[role="button"]:focus-visible { outline: 3px solid #f6eedd; outline-offset: -8px; }
-.rgp-continue { display: block; margin-top: 24px; font: 14px/1.5 var(--rgp-mono); letter-spacing: .04em; }
+}
