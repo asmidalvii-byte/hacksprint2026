@@ -74,3 +74,23 @@ label.check.pricing-ai-option span{flex:1;min-width:0}
 .pricing-assistance #calculatePricing,.pricing-assistance #approvePrice { width: 100%; min-height: 44px; margin: 12px 0; }
 .pricing-assistance .pricing-ai-option { margin: 16px 0; }
 @media(max-width:600px){.pricing-fields{grid-template-columns:1fr;gap:16px}.pricing-voice select{flex-basis:100%;width:100%}}
+
+/* ---------- help icons: small (?) clues next to important fields ---------- */
+.help-icon{
+  display:inline-grid;place-items:center;width:20px;height:20px;min-width:20px;min-height:20px;
+  border-radius:50%;border:1.5px solid var(--kriti-line);background:var(--kriti-paper);
+  color:var(--kriti-muted);font-size:12px;font-weight:700;line-height:1;
+  cursor:pointer;margin-left:6px;vertical-align:middle;padding:0;flex:none;
+}
+.help-icon:hover,.help-icon[aria-expanded="true"]{
+  background:var(--kriti-terracotta);color:#fff;border-color:var(--kriti-terracotta);
+}
+.help-tip{
+  position:absolute;z-index:500;max-width:min(280px,calc(100vw - 32px));
+  background:var(--kriti-charcoal);color:#fff;font-size:13px;line-height:1.5;
+  padding:10px 12px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.2);
+}
+.help-tip::before{
+  content:"";position:absolute;top:-6px;left:16px;width:12px;height:12px;
+  background:var(--kriti-charcoal);transform:rotate(45deg);
+}

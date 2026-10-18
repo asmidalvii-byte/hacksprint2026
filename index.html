@@ -28,14 +28,14 @@
 <label for="account_email">Email address</label><input id="account_email" type="email" autocomplete="username" placeholder="you@yourbusiness.com" required>
 <label for="account_password">Password</label><input id="account_password" type="password" autocomplete="current-password" minlength="8" required aria-describedby="account_password_hint"><p class="auth-hint" id="account_password_hint">Use at least 8 characters.</p>
 <fieldset id="account_business_fields" hidden><legend>Business registration</legend>
-<label for="account_id_type">Registration type</label><select id="account_id_type"><option value="gst">GSTIN</option><option value="udyam">Udyam registration</option></select>
+<label for="account_id_type">Registration type<button type="button" class="help-icon" aria-label="What is registration type?" data-help="Pick whichever ID your business already has — GSTIN if you're GST-registered, Udyam if you have an MSME/Udyam registration number. You only need one.">?</button></label><select id="account_id_type"><option value="gst">GSTIN</option><option value="udyam">Udyam registration</option></select>
 <label for="account_business_id" id="account_id_label">GSTIN</label><input id="account_business_id" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="19" placeholder="15-character GSTIN" aria-describedby="account_id_help account_id_error">
 <p class="auth-hint" id="account_id_help">Enter your 15-character GSTIN. Format checking does not verify registration or ownership.</p><p id="account_id_error" class="auth-error" role="alert"></p>
 <label class="auth-consent"><input id="account_business_consent" type="checkbox"> <span>I agree to store this business ID with my account for registration review.</span></label>
 </fieldset>
 <button class="primary wide" id="account_login" type="submit">Sign in</button><button class="primary wide" id="account_register" type="button" hidden>Create account</button><button class="text-button wide" id="account_reset" type="button">Forgot password?</button>
 </form>
-<div class="auth-note"><strong>Business registration required</strong><p>Create an account with a GSTIN or Udyam ID. Demo checks validate the format only; access to protected tools requires separate business approval.</p><button id="account_demo" type="button" class="text-button">Preview a sample verification</button><p id="account_demo_result" role="status" hidden></p></div>
+<div class="auth-note"><strong>Business registration required</strong><p>Create an account with a GSTIN or Udyam ID. Demo checks validate the format only; access to protected tools requires separate business approval.</p><button id="account_demo" type="button" class="text-button">Preview a sample verification</button><button type="button" class="help-icon" aria-label="What does this button do?" data-help="Shows you an example of what a completed business verification looks like. It does not check your real business or change your account.">?</button><p id="account_demo_result" role="status" hidden></p></div>
 <form id="account_new_password" hidden><label for="account_replacement">New password</label><input id="account_replacement" type="password" autocomplete="new-password" minlength="8" required><button type="submit">Save new password</button></form>
 <button id="account_logout" type="button" hidden>Sign out</button>
 <details id="account_products" hidden><summary>Saved products</summary><button id="account_refresh" type="button">Refresh products</button><div id="account_product_list"></div></details>
@@ -161,7 +161,7 @@
         <h3 data-i18n="suggestionsTitle">Review AI suggestions</h3>
         <p class="muted" data-i18n="suggestionsHelp">Select the fields you want to apply.</p>
         <div id="suggestions"></div>
-        <button id="applyAnalysis" class="secondary" type="button" data-i18n="applySuggestions">Apply selected suggestions</button>
+        <button id="applyAnalysis" class="secondary" type="button" data-i18n="applySuggestions">Apply selected suggestions</button><button type="button" class="help-icon" aria-label="What does applying do?" data-help="Copies your checked suggestions into the editable form below. Your price, material and condition are kept — nothing is published yet.">?</button>
         <details class="evidence-disclosure">
           <summary data-i18n="evidenceDetails">Evidence, uncertainty and missing details</summary>
           <div id="analysisDetails"></div>
@@ -196,7 +196,7 @@
         <audio id="reportAudio" controls hidden></audio>
         <div class="price-box">
           <div>
-            <label for="price"><span data-i18n="price">Price</span> <span>Required to sell</span></label>
+            <label for="price"><span data-i18n="price">Price</span> <span>Required to sell</span><button type="button" class="help-icon" aria-label="About the price field" data-help="You set this, always. It is never estimated or changed by AI — only you decide your selling price.">?</button></label>
             <div class="price-input">
               <span id="currencyLabel">INR</span>
               <input id="price" type="number" min="0.01" max="10000000" step="0.01" data-i18n-placeholder="addPrice" placeholder="Enter your price">
@@ -220,52 +220,52 @@
             </div>
             <div class="pricing-fields">
             <div class="pricing-field">
-            <label for="p_currency" data-i18n="currencySelectLabel">Currency</label>
+            <label for="p_currency" data-i18n="currencySelectLabel">Currency<button type="button" class="help-icon" aria-label="About currency" data-help="The currency your price is in. Changing this does not convert your existing price.">?</button></label>
             <select id="p_currency"><option>INR</option><option>USD</option><option>GBP</option><option>EUR</option></select>
             </div>
             <div class="pricing-field">
-            <label for="p_market" data-i18n="marketLabel">Geographic market</label>
+            <label for="p_market" data-i18n="marketLabel">Geographic market<button type="button" class="help-icon" aria-label="About geographic market" data-help="Where you mainly sell, e.g. India. Used only to find comparable prices for advice — never shown to buyers.">?</button></label>
             <input id="p_market" type="text" maxlength="200" value="India">
             </div>
             <div class="pricing-field">
-            <label for="p_location" data-i18n="locationLabel">Location / region</label>
+            <label for="p_location" data-i18n="locationLabel">Location / region<button type="button" class="help-icon" aria-label="About location" data-help="Your city or state. Helps narrow down pricing advice to similar sellers nearby.">?</button></label>
             <input id="p_location" type="text" maxlength="200">
             </div>
             <div class="pricing-field">
-            <label for="p_subcategory" data-i18n="subcategoryLabel">Confirmed subcategory</label>
+            <label for="p_subcategory" data-i18n="subcategoryLabel">Confirmed subcategory<button type="button" class="help-icon" aria-label="About subcategory" data-help="A more specific type within your category, e.g. 'silk saree' instead of just 'saree'. Confirmed by you, not guessed from the photo.">?</button></label>
             <input id="p_subcategory" type="text" maxlength="200">
             </div>
             <div class="pricing-field">
-            <label for="p_dimensions" data-i18n="dimensionsLabel">Confirmed dimensions</label>
+            <label for="p_dimensions" data-i18n="dimensionsLabel">Confirmed dimensions<button type="button" class="help-icon" aria-label="About dimensions" data-help="The actual measured size of your product. Only use dimensions you've measured yourself.">?</button></label>
             <input id="p_dimensions" type="text" maxlength="200">
             </div>
             <div class="pricing-field">
-            <label for="p_workmanship" data-i18n="workmanshipLabel">Technique / workmanship</label>
+            <label for="p_workmanship" data-i18n="workmanshipLabel">Technique / workmanship<button type="button" class="help-icon" aria-label="About technique or workmanship" data-help="How it was made, e.g. handloom, hand-painted, machine-stitched. Helps buyers and pricing advice understand the craft involved.">?</button></label>
             <input id="p_workmanship" type="text" maxlength="200">
             </div>
             <div class="pricing-field">
-            <label for="p_accessories" data-i18n="accessoriesLabel">Included accessories (or none)</label>
+            <label for="p_accessories" data-i18n="accessoriesLabel">Included accessories (or none)<button type="button" class="help-icon" aria-label="About included accessories" data-help="Anything extra that comes with the product, like a blouse piece or a pouch. Write 'none' if nothing extra is included.">?</button></label>
             <input id="p_accessories" type="text" maxlength="200">
             </div>
             <div class="pricing-field">
-            <label for="p_seller_cost" data-i18n="costLabel">Total cost per unit</label>
+            <label for="p_seller_cost" data-i18n="costLabel">Total cost per unit<button type="button" class="help-icon" aria-label="About total cost per unit" data-help="What it costs you to make or source one unit — materials, labour, packaging. Used only to calculate a margin-based price suggestion.">?</button></label>
             <input id="p_seller_cost" type="number" min="0" step="0.01" max="10000000">
             </div>
             <div class="pricing-field">
-            <label for="p_seller_target_margin" data-i18n="marginLabel">Desired gross margin (%)</label>
+            <label for="p_seller_target_margin" data-i18n="marginLabel">Desired gross margin (%)<button type="button" class="help-icon" aria-label="About desired gross margin" data-help="How much profit you want over your cost, as a percentage. For example 40% margin on a ₹100 cost suggests a price around ₹167.">?</button></label>
             <input id="p_seller_target_margin" type="number" min="0" step="0.01" max="99.99">
             </div>
             </div>
             <input id="p_sales_channel" type="hidden" value="">
             <input id="p_target_customer" type="hidden" value="">
             <label class="check pricing-ai-option"><input id="p_use_ai" type="checkbox"> <span data-i18n="useAiLabel">Ask Gemini for extra pricing questions</span></label>
-            <button id="calculatePricing" class="secondary" type="button" data-i18n="calcPricingBtn">Calculate pricing advice</button>
+            <button id="calculatePricing" class="secondary" type="button" data-i18n="calcPricingBtn">Calculate pricing advice</button><button type="button" class="help-icon" aria-label="What does this button do?" data-help="Looks at the details above and suggests a price range. It is only a suggestion — it never sets or changes your price.">?</button>
             <div id="pricingContext"></div>
             <div id="pricingResult" role="status" data-i18n="noEstimateYet">No estimate yet.</div>
-            <button id="acceptPricing" class="secondary" type="button" data-i18n="acceptPricingBtn">Accept into empty price field</button>
+            <button id="acceptPricing" class="secondary" type="button" data-i18n="acceptPricingBtn">Accept into empty price field</button><button type="button" class="help-icon" aria-label="What does this button do?" data-help="Copies the suggested price into your Price field above, but only if that field is still empty. It never overwrites a price you've already entered.">?</button>
             <button id="rejectPricing" class="text-button" type="button" data-i18n="rejectPricingBtn">Reject recommendation</button>
-            <input id="priceApproved" type="checkbox" hidden aria-label="Selling price approved"><button id="approvePrice" type="button">Approve Selling Price</button><p id="priceApprovalStatus" role="status">Selling price needs approval.</p>
-            <label for="positioning" data-i18n="positioningLabel">Intended price positioning</label>
+            <input id="priceApproved" type="checkbox" hidden aria-label="Selling price approved"><button id="approvePrice" type="button">Approve Selling Price</button><button type="button" class="help-icon" aria-label="What does approving do?" data-help="Confirms your price is final and ready to use in ads and exports. You can still change the price later, but you'll need to approve it again.">?</button><p id="priceApprovalStatus" role="status">Selling price needs approval.</p>
+            <label for="positioning" data-i18n="positioningLabel">Intended price positioning<button type="button" class="help-icon" aria-label="About price positioning" data-help="How you want your price to compare to similar products — budget, mid-range or premium. Only applied if there's enough comparable price data to support it.">?</button></label>
             <select id="positioning">
               <option value="unclassified" data-i18n="posNeutral">Neutral / unclassified</option>
               <option value="budget-friendly" data-i18n="posBudget">Budget-friendly</option>
@@ -273,11 +273,11 @@
               <option value="premium" data-i18n="posPremium">Premium price point</option>
             </select>
             <p data-i18n="positioningNote">Needs comparable prices to confirm.</p>
-            <label for="originalPrice" data-i18n="originalPriceLabel">Original price (optional)</label>
+            <label for="originalPrice" data-i18n="originalPriceLabel">Original price (optional)<button type="button" class="help-icon" aria-label="About original price" data-help="Only fill this in if you're running a discount and want to show the price before the discount. Leave blank otherwise.">?</button></label>
             <input id="originalPrice" type="number" min="0.01" step="0.01">
-            <label for="discountPercent" data-i18n="discountLabel">Proposed discount %</label>
+            <label for="discountPercent" data-i18n="discountLabel">Proposed discount %<button type="button" class="help-icon" aria-label="About proposed discount" data-help="How much off the original price, as a percentage. This is a calculation shown in your marketing copy — it does not change your actual selling price.">?</button></label>
             <input id="discountPercent" type="number" min="0.01" max="99.99" step="0.01">
-            <button id="generateMarketing" class="secondary" type="button" data-i18n="genMarketingBtn">Generate reviewed-price marketing</button>
+            <button id="generateMarketing" class="secondary" type="button" data-i18n="genMarketingBtn">Generate reviewed-price marketing</button><button type="button" class="help-icon" aria-label="What does this button do?" data-help="Writes a caption and WhatsApp message using your approved price and details. You can still edit the text afterward.">?</button>
             <div id="marketingResult" data-i18n="marketingPlaceholder">Approve a price to generate captions and WhatsApp copy.</div>
           </section>
         </details>
@@ -428,5 +428,6 @@
 <script src="draft-persistence.js"></script>
 <script src="screens.js"></script>
 <script src="workflow-ui.js"></script>
+<script src="help-icons.js"></script>
 </body>
 </html>
