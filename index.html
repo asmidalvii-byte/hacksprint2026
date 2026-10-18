@@ -146,7 +146,7 @@
   <header class="app-header"><button type="button" class="icon-button back-button" id="backFromReport" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h2 data-i18n="reportTitle">Your product report</h2><span class="tag" id="draftTag" hidden>AWAITING PRODUCT</span></header>
   <div class="screen-inner">
     <p class="muted" data-i18n="reportHelp">Review the details below. You can edit anything.</p>
-    <div class="panel editor">
+    <div class="editor report-editor">
       <div id="empty">
         <div class="empty-mark">✦</div>
         <h3 data-i18n="emptyTitle">A good story starts with your product.</h3>
@@ -168,7 +168,9 @@
           <div id="intelligenceDetails"></div>
         </details>
       </section>
-      <form id="listing" hidden>
+      <form id="listing" class="report-columns" hidden>
+        <section class="report-card product-details-card" aria-labelledby="productDetailsHeading">
+          <header class="report-card-heading"><span class="report-step" aria-hidden="true">01</span><div><h3 id="productDetailsHeading">Product details</h3><p>Tell your product’s story.</p></div></header>
         <div class="notice" id="listingNotice" data-i18n="listingNoticeText">Review every detail before using it.</div>
         <label for="title" data-i18n="titleLabel">Product title</label>
         <input id="title" maxlength="150" required>
@@ -194,6 +196,10 @@
         </button>
         <p id="reportListenStatus" class="voice-status" role="status"></p>
         <audio id="reportAudio" controls hidden></audio>
+        <label class="check"><input type="checkbox" id="confirmed"> <span data-i18n="kritiProductApproval">I approve these product details.</span></label>
+        </section>
+        <section class="report-card pricing-details-card" aria-labelledby="pricingDetailsHeading">
+          <header class="report-card-heading"><span class="report-step" aria-hidden="true">02</span><div><h3 id="pricingDetailsHeading">Pricing &amp; positioning</h3><p>Choose a price with confidence.</p></div></header>
         <div class="price-box">
           <div>
             <label for="price"><span data-i18n="price">Price</span> <span>Required to sell</span></label>
@@ -208,7 +214,7 @@
         <details class="analysis-panel" open>
           <summary>Review selling price</summary>
           <section class="pricing-assistance" aria-label="Pricing assistance">
-            <h3 data-i18n="pricingTitle">Pricing &amp; positioning</h3>
+            <h3>Pricing assistance</h3>
             <p data-i18n="pricingIntro">Suggestions only — not a live market price.</p>
             <h4>Market &amp; product features</h4>
             <div class="pricing-voice">
@@ -281,7 +287,7 @@
             <div id="marketingResult" data-i18n="marketingPlaceholder">Approve a price to generate captions and WhatsApp copy.</div>
           </section>
         </details>
-        <label class="check"><input type="checkbox" id="confirmed"> <span data-i18n="kritiProductApproval">I approve these product details.</span></label>
+        </section>
       </form>
     </div>
     <p id="workflowStatus" role="status">Review product details to continue.</p>
