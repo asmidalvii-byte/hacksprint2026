@@ -55,3 +55,22 @@ body{color:var(--kriti-charcoal);background:var(--kriti-ivory)}
 label.check.pricing-ai-option{display:flex;align-items:center;gap:10px;width:100%;margin:18px 0;font-size:14px;line-height:1.5}
 label.check.pricing-ai-option input[type=checkbox]{appearance:auto;flex:0 0 18px;width:18px;height:18px;min-width:18px;min-height:18px;margin:0;padding:0}
 label.check.pricing-ai-option span{flex:1;min-width:0}
+
+/* Focused pricing workspace */
+#draftTag { display: none !important; }
+.pricing-assistance { padding: 8px 0; }
+.pricing-assistance h3 { margin: 8px 0; }
+.pricing-assistance h4 { margin: 24px 0 12px; font-size: 1rem; }
+.pricing-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 24px; margin: 20px 0; }
+.pricing-field { min-width: 0; }
+.pricing-field label { display: block; margin: 0 0 8px; }
+.pricing-field input,.pricing-field select { width: 100%; margin: 0; box-sizing: border-box; }
+.pricing-voice { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 16px; background: #f6f7f1; border: 1px solid #dce1d3; border-radius: 12px; }
+.pricing-voice label { margin: 0; }
+.pricing-voice select { flex: 1 1 180px; width: auto; margin: 0; }
+.pricing-voice button { min-height: 44px; margin: 0; }
+.pricing-voice p { flex-basis: 100%; margin: 0; font-size: .875rem; color: #4b5644; }
+.pricing-assistance #pricingResult { padding: 16px; margin: 16px 0; border: 1px solid #dce1d3; border-radius: 12px; }
+.pricing-assistance #calculatePricing,.pricing-assistance #approvePrice { width: 100%; min-height: 44px; margin: 12px 0; }
+.pricing-assistance .pricing-ai-option { margin: 16px 0; }
+@media(max-width:600px){.pricing-fields{grid-template-columns:1fr;gap:16px}.pricing-voice select{flex-basis:100%;width:100%}}
