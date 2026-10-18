@@ -29,5 +29,3 @@
 @media (prefers-reduced-motion: reduce) {
   .rgp-close, .rgp-corner { transition: none; }
 }
-.rgp-gate[data-phase="clear"][role="button"]{cursor:pointer}
-.rgp-continue{display:block;margin-top:24px;font:12px/1.6 Arial,sans-serif;letter-spacing:.08em;color:#f6eedd}

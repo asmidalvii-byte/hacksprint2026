@@ -25,7 +25,7 @@ function Welcome(){
     <section className="welcome-steps" aria-label="How Kriti works">{[['01','Capture your craft','Start with a clear product photo.'],['02','Make it yours','Review the details and set your price.'],['03','Tell your story','Create a catalog and marketing drafts.']].map(([n,title,body])=><article key={n}><span className="step-number">{n}</span><div><h2>{title}</h2><p>{body}</p></div></article>)}</section>
    </main><footer className="welcome-footer"><span>Thoughtfully made. Authentically yours.</span><span>कृति · Creation</span></footer>
   </div>
-  {intro&&<div className="welcome-intro"><RangoliPreloader waitForInteraction durationMs={2800} preset="oxide" hud={false} meta="Kriti" label="Welcome animation" message="Welcome to Kriti." blessing="शुभ आरंभ" onComplete={finish}/><button className="skip-intro" onClick={finish} autoFocus>Skip welcome <span aria-hidden="true">→</span></button></div>}
+  {intro&&<div className="welcome-intro"><RangoliPreloader durationMs={1800} preset="oxide" hud={false} meta="Kriti" label="Welcome animation" message="Welcome to Kriti." blessing="शुभ आरंभ" onComplete={finish}/><button className="skip-intro" onClick={finish} autoFocus>Skip welcome <span aria-hidden="true">→</span></button></div>}
  </>;
 }
 // Preserve email confirmation/recovery links that previously returned to the root URL.

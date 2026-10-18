@@ -6,13 +6,10 @@
     try { localStorage.setItem(I18N_LANG_KEY, code); } catch {}
     if (window.DukaanI18n) DukaanI18n.apply(document, code);
     renderLanguageGrid();
-    document.dispatchEvent(new Event("kriti:language"));
   }
 
   const history = ['screen-language'];
   function show(id) {
-    if (!document.getElementById(id)?.classList.contains("screen")) return;
-    document.dispatchEvent(new CustomEvent("kriti:navigate",{detail:{id}}));
     for (const el of document.querySelectorAll('.screen')) el.hidden = el.id !== id;
     if (history[history.length - 1] !== id) history.push(id);
     window.scrollTo(0, 0);
@@ -38,8 +35,7 @@
     const active = currentLang();
     grid.replaceChildren(...DukaanI18n.LANGUAGES.map(l => {
       const card = document.createElement('button');
-      card.type = 'button'; card.className = 'lang-card';
-      const option = document.createElement('div'); option.className='language-option'; option.setAttribute('role','listitem');
+      card.type = 'button'; card.className = 'lang-card'; card.setAttribute('role', 'listitem');
       card.setAttribute('aria-pressed', String(l.code === active));
       const text = document.createElement('span');
       const strong = document.createElement('strong'); strong.textContent = l.native; strong.lang = l.code;
@@ -48,15 +44,15 @@
       if (!l.ai) { const badge = document.createElement('span'); badge.className = 'limited-badge'; badge.textContent = 'Limited AI support'; text.append(badge); }
       card.append(text);
       card.onclick = () => { setLang(l.code); show('screen-home'); };
-      const speakBtn = document.createElement('button'); speakBtn.type='button';
+      const speakBtn = document.createElement('span');
       speakBtn.className = 'speak-name'; speakBtn.setAttribute('role', 'button'); speakBtn.tabIndex = 0;
       speakBtn.setAttribute('aria-label', 'Hear language name');
       speakBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z" fill="currentColor"/></svg>';
       const onSpeak = e => { e.stopPropagation(); speak(l.native, l.code); };
       speakBtn.onclick = onSpeak;
       speakBtn.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSpeak(e); } };
-      option.append(card, speakBtn);
-      return option;
+      card.append(speakBtn);
+      return card;
     }));
   }
 

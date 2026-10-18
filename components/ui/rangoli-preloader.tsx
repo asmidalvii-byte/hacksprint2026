@@ -63,8 +63,6 @@ export interface RangoliPreloaderProps {
   height?: string
   /** Fired once, after the gate has opened. */
   onComplete?: () => void
-  /** Keep the closing welcome visible until clicked or activated with the keyboard. */
-  waitForInteraction?: boolean
   className?: string
 }
 
@@ -312,7 +310,6 @@ export default function RangoliPreloader({
   monoFamily = MONO_STACK,
   height = "100svh",
   onComplete,
-  waitForInteraction = false,
   className = "",
 }: RangoliPreloaderProps) {
   const colors = { ...(PRESETS[preset] || PRESETS.oxide), ...(palette || {}) }
@@ -473,7 +470,7 @@ export default function RangoliPreloader({
       } else if (ph === "wind" && now - windAt > WIND_MS) {
         clearAt = now
         setLocal("clear")
-      } else if (ph === "clear" && !waitForInteraction && now - clearAt > CLEAR_MS) {
+      } else if (ph === "clear" && now - clearAt > CLEAR_MS) {
         setLocal("open")
       }
 
@@ -515,7 +512,6 @@ export default function RangoliPreloader({
       } else if (powder) {
         ctx.drawImage(powder, 0, 0, w, h)
       }
-      if (ph === "clear" && waitForInteraction) cancelAnimationFrame(raf)
     }
 
     layout()
@@ -527,7 +523,7 @@ export default function RangoliPreloader({
       cancelAnimationFrame(raf)
       ro.disconnect()
     }
-  }, [run, colorKey, folds, seed, waitForInteraction])
+  }, [run, colorKey, folds, seed])
 
   // After the gust: open the gate (or replay the showcase).
   React.useEffect(() => {
@@ -551,8 +547,7 @@ export default function RangoliPreloader({
   }
 
   const onActivate = () => {
-    if (phaseRef.current === "clear" && waitForInteraction) setPhase("open")
-    else if (phaseRef.current === "draw") rushRef.current = true
+    if (phaseRef.current === "draw") rushRef.current = true
     else if (loop && (phaseRef.current === "hold" || phaseRef.current === "clear")) replay()
   }
 
@@ -579,11 +574,11 @@ export default function RangoliPreloader({
         <div
           className="rgp-gate"
           data-phase={loop && phase === "open" ? "clear" : phase}
-          role={phase === "clear" && waitForInteraction ? "button" : "progressbar"}
-          aria-label={phase === "clear" && waitForInteraction ? "Welcome to Kriti. Click to continue." : label}
-          aria-valuemin={phase === "clear" && waitForInteraction ? undefined : 0}
-          aria-valuemax={phase === "clear" && waitForInteraction ? undefined : 100}
-          aria-valuenow={phase === "clear" && waitForInteraction ? undefined : pct}
+          role="progressbar"
+          aria-label={label}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={pct}
           tabIndex={0}
           onClick={onActivate}
           onKeyDown={(e) => {
@@ -608,7 +603,6 @@ export default function RangoliPreloader({
             <div className="rgp-close" aria-hidden={phase === "draw"}>
               {blessing ? <span className="rgp-blessing">{blessing}</span> : null}
               <p className="rgp-message">{message}</p>
-              {waitForInteraction && <span className="rgp-continue">Click anywhere to continue · or press Enter</span>}
               {loop ? <span className="rgp-replay">Click to replay</span> : null}
             </div>
           ) : null}

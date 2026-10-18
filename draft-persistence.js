@@ -1,7 +1,7 @@
 const draftStore=DukaanDraftStorage.createStore(globalThis.indexedDB);
 function localDraftStore(account){return account?.demoAccess?DukaanDraftStorage.createStore(globalThis.indexedDB,'test-account:'+account.user.id):draftStore}
 let draftSaveTimer,draftInteracted=false,draftRestoring=true,draftSaveChain=Promise.resolve(),cloudProductId=null,cloudImagePath=null,cloudImageFile=null;
-function draftControls(){return [...document.querySelectorAll('input[id],textarea[id],select[id]')].filter(el=>el.type!=='file'&&!/^(account_|verification_|inventory-|help-|voice-)/.test(el.id))}
+function draftControls(){return [...document.querySelectorAll('input[id],textarea[id],select[id]')].filter(el=>el.type!=='file'&&!/^(account_|verification_)/.test(el.id))}
 function captureDraft(){return {version:2,savedAt:new Date().toISOString(),fields:Object.fromEntries(draftControls().map(el=>[el.id,{value:el.value,checked:el.checked}])),file:currentFile,ready,sample,analysis,appliedAnalysis,acceptedFields,draftSource,pricingResult,marketingResult,socialDraft,socialDirty,socialContextStale};}
 function beginCloudProduct(){cloudProductId=null;cloudImagePath=null;cloudImageFile=null}
 function saveDraft(){
@@ -18,7 +18,7 @@ function saveDraft(){
   $('draftSaveStatus').textContent=(cloud?'Saved to your account at ':'Saved on this device at ')+new Date(snapshot.savedAt).toLocaleTimeString();return true;
  }).catch(()=>{$('draftSaveStatus').textContent='Saving failed. Your edits remain in this tab. Retry before closing.';return false});return draftSaveChain;
 }
-function scheduleDraftSave(event){if(event?.target?.id==='approvePrice')return;if(event?.target?.id&&/^(account_|verification_|inventory-|help-|voice-)/.test(event.target.id))return;draftInteracted=true;clearTimeout(draftSaveTimer);draftSaveTimer=setTimeout(()=>void saveDraft(),500)}
+function scheduleDraftSave(event){if(event?.target?.id==='approvePrice')return;if(event?.target?.id&&/^(account_|verification_)/.test(event.target.id))return;draftInteracted=true;clearTimeout(draftSaveTimer);draftSaveTimer=setTimeout(()=>void saveDraft(),500)}
 $('saveDraft').onclick=()=>void saveDraft();document.addEventListener('input',scheduleDraftSave);document.addEventListener('change',scheduleDraftSave);document.addEventListener('click',scheduleDraftSave);
 function applySavedDraft(saved){
  for(const el of draftControls()){const value=saved.fields?.[el.id];if(value){el.value=value.value;el.checked=Boolean(value.checked)}}

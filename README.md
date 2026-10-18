@@ -1,7 +1,5 @@
 # Kriti
 
-Latest additions: [Inventory, Help and voice input setup / verification](docs/INVENTORY-HELP-VOICE.md). Inventory requires migration `202610180006_inventory.sql` and real business approval; local demo access does not bypass its RLS. [Welcome page build instructions](docs/LANDING-PAGE.md) and [Instagram backend setup](docs/INSTAGRAM-BACKEND.md) document their separate limitations.
-
 Seller-reviewed product intelligence, pricing and marketing. Start with [current Kriti setup and verification instructions](docs/KRITI-SETUP.md). Earlier milestone reports below describe historical integration states; the current setup guide takes precedence.
 
 # Kriti — HackSprint PS42
