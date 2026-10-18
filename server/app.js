@@ -1,5 +1,6 @@
 import {installSellers, sellerConfig} from './sellers.js';
 import { integrationStatus } from './integrations.js';
+import {installInventory} from './inventory.js';
 import {createInstagram} from './instagram.js';
 import express from 'express';
 import multer from 'multer';
@@ -21,7 +22,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
   app.disable('x-powered-by');
   app.use((req, res, next) => {
     res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store',
-      'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' data:; connect-src 'self' ${accounts.configured?new URL(accounts.url).origin:''}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'` });
+      'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: ${accounts.configured?new URL(accounts.url).origin:''}; media-src 'self' data:; connect-src 'self' ${accounts.configured?new URL(accounts.url).origin:''}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'` });
     next();
   });
   instagram.installCallback(app);
@@ -39,6 +40,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
   });
   installSellers(app,{settings:accounts,clientFactory:sellerClientFactory});
   instagram.installRoutes(app);
+  installInventory(app);
   const limiter = rateLimit({ windowMs: 60000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false,
     message: { error: { code: 'RATE_LIMITED', message: 'Too many requests. Wait a minute or use a sample draft.' } } });
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.maxUploadBytes, files: 1, fields: 2, fieldSize: 10000, parts: 3 } });
@@ -109,7 +111,7 @@ export function createApp({ config, analyze = createAnalyzer(config), priceProdu
   app.get(['/', '/welcome'],(req,res)=>res.sendFile(root+'landing.html'));
   app.get('/assets/kriti-logo.jpeg',(req,res)=>res.sendFile(root+'assets/logo/kriti-logo.jpeg'));
   for(const file of ['landing.js','landing.css'])app.get('/landing/'+file,(req,res)=>res.sendFile(root+'public/landing/'+file));
-  for (const file of ['index.html', 'kriti-ui.css', 'kriti-i18n.js', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'account-ui.js', 'workflow-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css', 'i18n.js', 'screens.js']) app.get(`/${file}`, (req, res) => res.sendFile(root + file));
+  for (const file of ['portal-ui.js','voice-input.js','index.html', 'kriti-ui.css', 'kriti-i18n.js', 'app.js', 'pricing-ui.js', 'intelligence-ui.js', 'account-ui.js', 'workflow-ui.js', 'draft-storage.js', 'draft-persistence.js', 'style.css', 'i18n.js', 'screens.js']) app.get(`/${file}`, (req, res) => res.sendFile(root + file));
   app.use((req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Not found.' } }));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
