@@ -13,10 +13,9 @@ function RangoliArt(){
  return <div className="welcome-art" aria-hidden="true"><div className="art-halo"/><canvas ref={ref} width="640" height="640"/><img src="/assets/kriti-logo.jpeg" alt="" className="art-logo"/><span className="art-note">Rooted in craft. Ready for the world.</span></div>;
 }
 function Welcome(){
- const [intro,setIntro]=React.useState(()=>!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+ const [intro,setIntro]=React.useState(true);
  const heading=React.useRef<HTMLHeadingElement>(null);
  const finish=React.useCallback(()=>{setIntro(false);requestAnimationFrame(()=>heading.current?.focus())},[]);
- React.useEffect(()=>{if(!intro)return;const escape=(event:KeyboardEvent)=>{if(event.key==='Escape')finish()};window.addEventListener('keydown',escape);return()=>window.removeEventListener('keydown',escape)},[intro,finish]);
  return <>
   <div className="welcome-page" inert={intro}>
    <header className="welcome-nav"><a href="/" className="welcome-brand" aria-label="Kriti home"><img src="/assets/kriti-logo.jpeg" alt="Kriti logo" width="56" height="56"/><span>Kriti<span className="brand-sub">MADE FOR YOUR BUSINESS</span></span></a><a className="welcome-signin" href="/index.html">Enter your studio <span aria-hidden="true">↗</span></a></header>
@@ -25,7 +24,7 @@ function Welcome(){
     <section className="welcome-steps" aria-label="How Kriti works">{[['01','Capture your craft','Start with a clear product photo.'],['02','Make it yours','Review the details and set your price.'],['03','Tell your story','Create a catalog and marketing drafts.']].map(([n,title,body])=><article key={n}><span className="step-number">{n}</span><div><h2>{title}</h2><p>{body}</p></div></article>)}</section>
    </main><footer className="welcome-footer"><span>Thoughtfully made. Authentically yours.</span><span>कृति · Creation</span></footer>
   </div>
-  {intro&&<div className="welcome-intro"><RangoliPreloader durationMs={1800} preset="oxide" hud={false} meta="Kriti" label="Welcome animation" message="Welcome to Kriti." blessing="शुभ आरंभ" onComplete={finish}/><button className="skip-intro" onClick={finish} autoFocus>Skip welcome <span aria-hidden="true">→</span></button></div>}
+  {intro&&<div className="welcome-intro"><RangoliPreloader durationMs={4200} waitForInteraction preset="oxide" hud={false} meta="Kriti" label="Welcome animation" message="Welcome to Kriti." blessing="शुभ आरंभ" onComplete={finish}/></div>}
  </>;
 }
 // Preserve email confirmation/recovery links that previously returned to the root URL.
