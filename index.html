@@ -259,12 +259,12 @@
             <input id="p_sales_channel" type="hidden" value="">
             <input id="p_target_customer" type="hidden" value="">
             <label class="check pricing-ai-option"><input id="p_use_ai" type="checkbox"> <span data-i18n="useAiLabel">Ask Gemini for extra pricing questions</span></label>
-            <button id="calculatePricing" class="secondary" type="button" data-i18n="calcPricingBtn">Calculate pricing advice</button><button type="button" class="help-icon" aria-label="What does this button do?" data-help="Looks at the details above and suggests a price range. It is only a suggestion — it never sets or changes your price.">?</button>
+            <button id="calculatePricing" class="secondary" type="button" data-i18n="calcPricingBtn">Calculate pricing advice</button>
             <div id="pricingContext"></div>
             <div id="pricingResult" role="status" data-i18n="noEstimateYet">No estimate yet.</div>
             <button id="acceptPricing" class="secondary" type="button" data-i18n="acceptPricingBtn">Accept into empty price field</button><button type="button" class="help-icon" aria-label="What does this button do?" data-help="Copies the suggested price into your Price field above, but only if that field is still empty. It never overwrites a price you've already entered.">?</button>
             <button id="rejectPricing" class="text-button" type="button" data-i18n="rejectPricingBtn">Reject recommendation</button>
-            <input id="priceApproved" type="checkbox" hidden aria-label="Selling price approved"><button id="approvePrice" type="button">Approve Selling Price</button><button type="button" class="help-icon" aria-label="What does approving do?" data-help="Confirms your price is final and ready to use in ads and exports. You can still change the price later, but you'll need to approve it again.">?</button><p id="priceApprovalStatus" role="status">Selling price needs approval.</p>
+            <input id="priceApproved" type="checkbox" hidden aria-label="Selling price approved"><button id="approvePrice" type="button">Approve Selling Price</button><p id="priceApprovalStatus" role="status">Selling price needs approval.</p>
             <label for="positioning" data-i18n="positioningLabel">Intended price positioning<button type="button" class="help-icon" aria-label="About price positioning" data-help="How you want your price to compare to similar products — budget, mid-range or premium. Only applied if there's enough comparable price data to support it.">?</button></label>
             <select id="positioning">
               <option value="unclassified" data-i18n="posNeutral">Neutral / unclassified</option>
